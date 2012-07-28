@@ -19,6 +19,7 @@ $(function(){
 			,	buttonAll: $("#buttonAll")
 			,	selLearnt: $("#selLearnt")
 			,	selImpo: $("#selImpo")
+			,	info: $("#info")
 			}
 		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/;
 	
@@ -108,7 +109,14 @@ $(function(){
 	}
 	
 	function postWord(word){
-		$.post("/edit", word, function(){}, "json");
+		$.ajax({
+			type: "POST"
+		,	url: "/edit"
+		,	data: word
+		,	success: function(data){
+				$selectors.info.text(data);
+			}
+		});
 	}
 	
 	function submitEdit(){
@@ -119,6 +127,9 @@ $(function(){
 		$.ajax({
 			type: "DELETE"
 		,	url: "/edit/" + word
+		,	success: function(data){
+				$selectors.info.text(data);
+			}
 		});
 	}
 	

@@ -21,16 +21,20 @@ block content
 					option(value="adv") adv
 					option(value="prep") prep
 					option(value="conj") conj
+					option(value="expr") expr
 				label(for="pronunciation") Pronunciation
 				input(type="text")#pronunciation.block
 				label(for="explanation") Explanation
-				textarea#explanation.block
+				textarea(rows="15", cols="30")#explanation.block
 				label(for="chapter") Chapter
 				input(type="number", value="0")#chapter.block
-				label(for="important") Important
-				input(type="checkbox")#important.block
-				label(for="learnt") Learnt
-				input(type="checkbox")#learnt.block
+				.block
+					input(type="checkbox")#important
+					label(for="important") Important
+				.block
+					input(type="checkbox")#learnt
+					label(for="learnt") Learnt
 			fieldset
 				input(type="submit", value="Save")#save
 				input(type="button", value="Delete")#del
+				p#info.info

@@ -18,10 +18,11 @@ var http = require("http")
 			, important: "important=TRUE"
 			, notImportant: "important=FALSE"
 			,	all: "SELECT * FROM words"
+			,	orderByWord: " ORDER BY word"
 			};
 			
 			function quoteString(str){
-				return "'" + str + "'";
+				return "'" + str.replace("\'", "\\\'").replace("\"", "\\\"") + "'";
 			}
 			
 			function concatOptions(opt1, opt2){
@@ -71,7 +72,7 @@ var http = require("http")
 				}else{
 					qry = queries.chapter + ">=" + body.from + " AND chapter<=" + body.to;
 				}
-				return concatOptions(qry, getOptions(body)) + ";";
+				return concatOptions(qry, getOptions(body)) + queries.orderByWord + ";";
 			}
 			
 			function wordQuery(word){
@@ -93,7 +94,7 @@ var http = require("http")
 				}else{
 					qry = queries.all + " WHERE " + qry;
 				}
-				qry += " ORDER BY word;"
+				qry += queries.orderByWord + ";";
 				return qry;
 			}
 			
@@ -214,7 +215,7 @@ app.get(addParamsToURL("/chapters"), parseURLjson("/chapters"), function(req, re
 	});
 });
 
-app.post("/edit", function(req, res, next){console.log(req.body);
+app.post("/edit", function(req, res, next){
 	database.query(query.del(req.body.word), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
