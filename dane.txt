@@ -1,0 +1,6 @@
+﻿słowo
+rozdział
+bool ważne
+bool nauczone
+
++ API z WordReference --> IFrame / przparsować

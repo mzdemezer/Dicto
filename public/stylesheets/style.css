@@ -1,0 +1,30 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.block {
+	display: block;
+}
+
+.inline {
+	border: 1px solid black;
+	display: inline;
+	float: left;
+}
+
+.searchRes {
+	width: 30%;
+}
+
+em {
+	font-weight: bold;
+}
+
+.notlearnt {
+	color: #900;
+}

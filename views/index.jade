@@ -1,0 +1,36 @@
+
+extends layout
+
+append scripts
+	script(type="text/javascript", src="/javascripts/index.js")
+
+block content
+	.inline
+		form#editForm
+			fieldset
+				label(for="word") Word
+				input(type="text")#word.block
+				label(for="type") Type
+				select#type.block
+					option(value="v") v
+					option(value="n") nmf
+					option(value="nf") nf
+					option(value="nm") nm
+					option(value="nm") npl
+					option(value="adj") adj
+					option(value="adv") adv
+					option(value="prep") prep
+					option(value="conj") conj
+				label(for="pronunciation") Pronunciation
+				input(type="text")#pronunciation.block
+				label(for="explanation") Explanation
+				textarea#explanation.block
+				label(for="chapter") Chapter
+				input(type="number", value="0")#chapter.block
+				label(for="important") Important
+				input(type="checkbox")#important.block
+				label(for="learnt") Learnt
+				input(type="checkbox")#learnt.block
+			fieldset
+				input(type="submit", value="Save")#save
+				input(type="button", value="Delete")#del

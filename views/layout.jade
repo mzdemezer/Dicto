@@ -1,0 +1,32 @@
+doctype 5
+html
+	head
+		title Dicto
+		link(rel="stylesheet", href="/stylesheets/style.css")
+		block scripts
+			script(type="text/javascript", src="/javascripts/jquery.js")
+	body
+		.inline.searchRes
+			form#searchForm
+				fieldset
+					input(type="text")#textWord
+					input(type="submit", value="Search")#buttonWord
+					.block
+						label(for="selLearnt") Learnt
+						select#selLearnt
+							option(value="all") Whatever
+							option(value="true") Yes
+							option(value="false") No!
+					.block
+						label(for="selImpo") Important
+						select#selImpo
+							option(value="all") Whatever
+							option(value="true") Yes
+							option(value="false") No!
+				fieldset
+					input(type="text")#textChapter
+					input(type="button", value="Show chapters")#buttonChapter
+				fieldset
+					input(type="button", value="Show all")#buttonAll
+				#def
+		block content
