@@ -5,12 +5,12 @@ append scripts
 	script(type="text/javascript", src="/javascripts/index.js")
 
 block content
-	.inline
+	.floatLeft.divStd
 		form#editForm
 			fieldset
 				label(for="word") Word
 				input(type="text")#word.block
-				label(for="type") Type
+				label(for="type") Class
 				select#type.block
 					option(value="v") v
 					option(value="n") nmf
@@ -38,3 +38,6 @@ block content
 				input(type="submit", value="Save")#save
 				input(type="button", value="Delete")#del
 				p#info.info
+
+block WR
+	p WordReference

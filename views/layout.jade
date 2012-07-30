@@ -5,28 +5,53 @@ html
 		link(rel="stylesheet", href="/stylesheets/style.css")
 		block scripts
 			script(type="text/javascript", src="/javascripts/jquery.js")
+			script(type="text/javascript", src="/javascripts/jquery-ui.js")
 	body
-		.inline.searchRes
-			form#searchForm
+		h1.title Dicto
+		#userPanel.clri.abso
+			form#loginForm.opa
 				fieldset
-					input(type="text")#textWord
-					input(type="submit", value="Search")#buttonWord
-					.block
-						label(for="selLearnt") Learnt
-						select#selLearnt
-							option(value="all") Whatever
-							option(value="true") Yes
-							option(value="false") No!
-					.block
-						label(for="selImpo") Important
-						select#selImpo
-							option(value="all") Whatever
-							option(value="true") Yes
-							option(value="false") No!
-				fieldset
-					input(type="text")#textChapter
-					input(type="button", value="Show chapters")#buttonChapter
-				fieldset
-					input(type="button", value="Show all")#buttonAll
-				#def
-		block content
+					#registerWrapper.divStd
+						p.textStd You don't have an account?
+						h4.textStd Register now!
+						input(type="button", value="Register")#buttonRegister
+					h2#userInfo.info #{userId}
+					#loginWrapper
+						.block
+							input(type="text")#loginId
+							label(for="loginId") User
+						.block
+							input(type="password")#loginPass
+							label(for="loginPass") Password
+					.floatLeft
+						input(type="submit", value="Log in")#buttonLogin
+					.floatRight
+						input(type="button", value="Delete user")#buttonDelete
+		#content
+			.floatLeft.divStd
+				.floatLeft.divStd.searchRes
+					form#searchForm
+						fieldset
+							input(type="text")#textWord
+							input(type="submit", value="Search")#buttonWord
+							.block
+								select#selLearnt
+									option(value="all") Whatever
+									option(value="true") Yes
+									option(value="false") No!
+								label(for="selLearnt") Learnt
+							.block
+								select#selImpo
+									option(value="all") Whatever
+									option(value="true") Yes
+									option(value="false") No!
+								label(for="selImpo") Important
+						fieldset
+							input(type="text")#textChapter
+							input(type="button", value="Show chapters")#buttonChapter
+						fieldset
+							input(type="button", value="Show all")#buttonAll
+						#def
+				block content
+			.floatLeft.divStd
+				block WR

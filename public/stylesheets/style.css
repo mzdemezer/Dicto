@@ -1,24 +1,63 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding: 20px;
+  font-size: 16px;
+	background-color: #000;
+	color: #f60;
 }
 
 a {
   color: #00B7FF;
 }
 
+.title {
+	color: #fc0;
+	text-align: center;
+	font: 5em Garamond, serif;
+	font-weight: bold;
+	margin: 0em;
+}
+
 .block {
 	display: block;
 }
 
-.inline {
-	border: 1px solid black;
-	display: inline;
-	float: left;
+select {
+	border: 1px solid #aaa;
+}
+
+fieldset, input, textarea, .divStd, a, p, select {
+	font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+input, select, textarea {
+	background-color: #000;
+	color: #fc0;
+}
+
+fieldset, input, textarea, .divStd, select {
+	border-radius: 5px;
+	border-top: 1px solid #996;
+	border-left: 1px solid #996;
+	border-right: 1px solid #000;
+	border-bottom: 1px solid #000;
+}
+
+input[type=button], input[type=submit], select {
+	transition: all .1s ease-in-out;
+	-moz-transition: all .1s ease-in-out;
+	-webkit-transition: all .1s ease-in-out;
+	-o-transition: all .1s ease-in-out;
+}
+
+input[type=button]:hover, input[type=submit]:hover, select:hover {
+	transform: scale(1.05);
+	-moz-transform: scale(1.05);
+	-webkit-transform: scale(1.05);
+	-o-transform: scale(1.05);
 }
 
 .searchRes {
-	width: 30%;
+	width: 25em;
 }
 
 em {
@@ -26,10 +65,82 @@ em {
 }
 
 .notlearnt {
-	color: #900;
+	color: #f00;
 }
 
 .info {
-	color: #090;
+	font-size: 1.5em;
+	color: #ff0;
 	font-weight: bold;
+}
+
+p, h4, .info {
+	text-align: center;
+}
+
+#buttonRegister {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.textStd {
+	margin: 0.5em;
+}
+
+.floatLeft {
+	display: inline;
+	float: left;
+}
+
+.floatRight {
+	float: right;
+	display: inline;
+}
+
+.divStd {
+	background-color: #292912;
+	margin: 0.5em;
+	padding: 0.4em;
+}
+
+.abso {
+	position: absolute;
+	z-index: 10000;
+	border-radius: 6px;
+}
+
+.clri {
+	right: 2%;
+	top: 2%;
+}
+
+.cl {
+	right: 50%;
+	top: 35%;
+}
+
+#loginForm {
+	background-color: #292912;
+}
+
+.opa {
+	opacity: 0.2;
+	transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-webkit-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+}
+
+.opa:hover {
+	opacity: 1.0;
+}
+
+.foundWord {
+	text-decoration: none;
+	color: #ff0;
+}
+
+.foundWord:hover {
+	color: #0f0;
 }

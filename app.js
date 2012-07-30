@@ -1,114 +1,13 @@
 var http = require("http")
 	,	express = require("express")
+	,	loggedStore = require("loggedStore")
+	,	store = loggedStore()
 	,	mysql = require("mysql")
   , http = require("http")
-	// ,	process = require("process")
+	,	crypt = require("crypt")
 	,	database
 	,	app = express()
-	,	query = (function(){
-			var queries = {
-				createDicto: "CREATE DATABASE Dicto;"
-			,	createWords: "CREATE TABLE words (word VARCHAR(40), type VARCHAR(4), explanation VARCHAR(10000), pronunciation VARCHAR(20), chapter INT, important BOOL, learnt BOOL);"
-			,	chapter: "SELECT * FROM words WHERE chapter"
-			,	word: "SELECT * FROM words WHERE word"
-			, insertWord: "INSERT INTO words (word,type,explanation,pronunciation,chapter,important,learnt) VALUE "
-			,	deleteWord: "DELETE FROM words WHERE word="
-			,	learnt: "learnt=TRUE"
-			,	notLearnt: "learnt=FALSE"
-			, important: "important=TRUE"
-			, notImportant: "important=FALSE"
-			,	all: "SELECT * FROM words"
-			,	orderByWord: " ORDER BY word"
-			};
-			
-			function quoteString(str){
-				return "'" + str.replace("\'", "\\\'").replace("\"", "\\\"") + "'";
-			}
-			
-			function concatOptions(opt1, opt2){
-				if(opt1 === ""){
-					return opt2;
-				}else if(opt2 === ""){
-					return opt1;
-				}else{
-					return opt1 + " AND " + opt2;
-				}
-			}
-			
-			function getOptions(body){
-				var qry;
-				if(body.learnt === "0"){
-					qry = queries.notLearnt;
-				}else if(body.learnt != null){
-					qry = queries.learnt;
-				}else{
-					qry = "";
-				}
-				
-				if(body.important === "0"){
-					qry = concatOptions(qry, queries.notImportant);
-				}else if(body.important != null){
-					qry = concatOptions(qry, queries.important);
-				}
-				
-				return qry;
-			}
-			
-			function insertQuery(word){
-				var fieldArr = [word.word, word.type, word.explanation, word.pronunciation]
-				,	i;
-				for(i = 0; i < fieldArr.length; ++i){
-					fieldArr[i] = quoteString(fieldArr[i]);
-				}
-				fieldArr = fieldArr.concat([~~word.chapter, ~~word.important, ~~word.learnt]).join();
-
-				return queries.insertWord + "(" + fieldArr + ");";
-			}
-
-			function chapterQuery(body){
-				var qry;
-				if(body.to == null || body.to === body.from){
-					qry = queries.chapter + "=" + body.from;
-				}else{
-					qry = queries.chapter + ">=" + body.from + " AND chapter<=" + body.to;
-				}
-				return concatOptions(qry, getOptions(body)) + queries.orderByWord + ";";
-			}
-			
-			function wordQuery(word){
-				return queries.word + "=" + quoteString(word) + ";";
-			}
-			
-			function topQuery(word, limit){
-				return queries.word + " LIKE " + quoteString("%" + word + "%") + " ORDER BY POSITION(" + quoteString(word) + " IN word)" + " LIMIT " + limit + ";";
-			}
-			
-			function deleteQuery(word){
-				return queries.deleteWord + quoteString(word) + ";";
-			}
-			
-			function allQuery(body){
-				var qry = getOptions(body);
-				if(qry === ""){
-					qry = queries.all;
-				}else{
-					qry = queries.all + " WHERE " + qry;
-				}
-				qry += queries.orderByWord + ";";
-				return qry;
-			}
-			
-			return {
-				createDicto: function(){return queries.createDicto;}
-			,	createWords: function(){return queries.createWords;}
-			,	insert: insertQuery
-			,	word: wordQuery
-			,	top: function(wrd){return topQuery(wrd, 20);}
-			,	chapter: chapterQuery
-			,	del: deleteQuery
-			,	all: allQuery
-			};
-		})();
+	,	query = require("queries");
 
 app.configure(function(){
   app.set("port", process.env.PORT || 80);
@@ -117,6 +16,8 @@ app.configure(function(){
 	app.set("view options", { layout: false });
   app.use(express.logger("dev"));
   app.use(express.bodyParser());
+	app.use(express.cookieParser());
+	app.use(store.authenticate);
   app.use(express.methodOverride());
   app.use(app.router);
 	app.use(errorHandler);
@@ -133,7 +34,75 @@ app.param("word", function(req, res, next, word){
 });
 
 app.get("/", function(req, res, next){
-  res.render("index");
+	var userId = { userId: "" };
+	if(req.logged){
+		userId.userId = req.cookies["logged-user-id"].userId;
+	}
+  res.render("index", userId);
+});
+
+app.post("/login", function loginValidate(req, res, next){
+	database.query(query.getUser(req.body.userId), function(err, rows, fields){
+		if(err){
+			res.send(500);
+		}else{
+			if(rows.length === 0){
+				res.send(401);
+			}else{
+				if(crypt.isPassword(req.body.password, rows[0].passHash, rows[0].salt)){
+					store.newSession(req.body.userId, crypt.random(), res);
+					res.send(200);
+				}else{
+					res.send(401);
+				}
+			}
+		}
+	});
+});
+
+app.post("/logout", function(req, res, next){
+	if(req.logged){
+		store.endSession(req, res);
+		res.send(200);
+	}else{
+		next();
+	}
+});
+
+app.post("/newUser", function(req, res, next){
+	database.query(query.getUser(req.body.userId), function(err, rows, fields){
+		if(rows.length === 0){
+			var encryption = crypt.encrypt(req.body.password);
+			
+			database.query(query.insertUser(req.body.userId, encryption.hash, encryption.salt), function(err, rows, fields){
+				if(err){
+					console.log(err);
+					res.send(err, 500);
+				}else{
+					store.newSession(req.body.userId, crypt.random(), res);
+					res.send(201);
+				}
+			});
+		}else{
+			res.send(409);
+		}
+	});
+});
+
+app.del("/deleteUser", function(req, res, next){
+	var userId;
+	if(req.logged){
+		userId = store.endSession(req, res);
+		database.query(query.delUser(userId), function(err, rows, fields){
+			if(err){
+				res.send(500)
+			}else{
+				res.send(200);
+			}
+		});
+	}else{
+		res.send(401);
+	}
 });
 
 app.get("/search/:word", function(req, res, next){
@@ -216,29 +185,37 @@ app.get(addParamsToURL("/chapters"), parseURLjson("/chapters"), function(req, re
 });
 
 app.post("/edit", function(req, res, next){
-	database.query(query.del(req.body.word), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			database.query(query.insert(req.body), function(err, rows, fields){
-				if(err){
-					next(err, req, res);
-				}else{
-					res.send("Edited: " + req.body.word);
-				}
-			});
-		}
-	});
+	if(req.logged){
+		database.query(query.del(req.body.word), function(err, rows, fields){
+			if(err){
+				next(err, req, res);
+			}else{
+				database.query(query.insert(req.body), function(err, rows, fields){
+					if(err){
+						next(err, req, res);
+					}else{
+						res.send("Edited: " + req.body.word);
+					}
+				});
+			}
+		});
+	}else{
+		res.send(401);
+	}
 });
 
 app.del("/edit/:word", function(req, res, next){
-	database.query(query.del(req.word), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.send("Deleted: " + req.word);
-		}
-	});
+	if(req.logged){
+		database.query(query.del(req.word), function(err, rows, fields){
+			if(err){
+				next(err, req, res);
+			}else{
+				res.send("Deleted: " + req.word);
+			}
+		});
+	}else{
+		res.send(401);
+	}
 });
 
 function getTableName(err){
@@ -275,15 +252,19 @@ function errorHandler(err, req, res, next){
 			console.log("Express server listening on port " + app.get("port"));
 		});
 	}
-
+	
+	function correctString(data){
+		return /^([^\n\r]*)/.exec(data)[1];
+	}
+	
 	function startApp(pass){
-		pass = /^([^\n\r]*)/.exec(pass)[1];
+		pass = correctString(pass);
 		database = mysql.createConnection({
 			host     : "localhost"
 		,	user     : "root"
 		,	password : pass
 		});
-		process.stdin.pause();
+		
 		database.connect(function(err){
 			if(!err){
 				database.query("use Dicto;", function(err, rows, fields){
@@ -292,7 +273,13 @@ function errorHandler(err, req, res, next){
 							if(err){
 								console.log("MySQL problem: cannot create database!");
 							}else{
-								database.query(query.createWords(), startServer);
+								database.query(query.createWords(), function(err, rows, fields){
+									if(err){
+										console.log("MySQL problem: cannot create words table!");
+									}else{
+										database.query(query.createUsers(), startServer);
+									}
+								});
 							}
 						});
 					}else{
@@ -312,6 +299,9 @@ function errorHandler(err, req, res, next){
 	}else{
 		process.stdin.resume();
 		process.stdin.setEncoding("utf8");
-		process.stdin.on("data", startApp);
+		process.stdin.on("data", function(data){
+			process.stdin.pause();
+			startApp(data);
+		});
 	}
 })();
