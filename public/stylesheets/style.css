@@ -110,6 +110,11 @@ p, h4, .info {
 	border-radius: 6px;
 }
 
+.wrcont {
+	width: 40%;
+	height: 80%;
+}
+
 .clri {
 	right: 2%;
 	top: 2%;
@@ -126,10 +131,10 @@ p, h4, .info {
 
 .opa {
 	opacity: 0.2;
-	transition: all 0.3s ease-in-out;
-	-moz-transition: all 0.3s ease-in-out;
-	-webkit-transition: all 0.3s ease-in-out;
-	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out 0.05s;
+	-moz-transition: all 0.3s ease-in-out 0.05s;
+	-webkit-transition: all 0.3s ease-in-out 0.05s;
+	-o-transition: all 0.3s ease-in-out 0.05s;
 }
 
 .opa:hover {

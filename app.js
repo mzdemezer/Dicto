@@ -3,7 +3,6 @@ var http = require("http")
 	,	loggedStore = require("loggedStore")
 	,	store = loggedStore()
 	,	mysql = require("mysql")
-  , http = require("http")
 	,	crypt = require("crypt")
 	,	database
 	,	app = express()
@@ -122,17 +121,6 @@ app.get("/search/:word", function(req, res, next){
 				res.json(rows);
 			}
 		}
-	});
-});
-
-app.get("/WR/:word", function getWRword(req, res){
-	var WRreq = http.get("http://www.wordreference.com/fren/" + req.word, function(resp){
-		resp.on("data", function(chunk){
-			res.send(chunk);
-		});
-	}).on("error", function(err){
-		console.log("HTTP GET error: " + err.message);
-		res.send("HTTP GET error: " + err.message);
 	});
 });
 

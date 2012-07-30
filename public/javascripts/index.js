@@ -31,6 +31,7 @@ $(function(){
 			,	buttonRegister: $("#buttonRegister")
 			,	registerWrapper: $("#registerWrapper")
 			,	buttonDelete: $("#buttonDelete")
+			,	WRiframe: $("#WRiframe")
 			}
 		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/;
 	
@@ -95,6 +96,11 @@ $(function(){
 	
 	function getWord(word){
 		$.get("/search/" + word, appendWords);
+		getWR(word);
+	}
+	
+	function getWR(word){
+		$selectors.WRiframe.attr("src", "http://www.wordreference.com/fren/" + word);
 	}
 	
 	function appendWords(data){
