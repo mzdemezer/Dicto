@@ -1,7 +1,7 @@
 var http = require("http")
 	,	express = require("express")
 	,	loggedStore = require("loggedStore")
-	,	store = loggedStore()
+	,	store = loggedStore({ reapInterval: 3600000 })
 	,	mysql = require("mysql")
 	,	crypt = require("crypt")
 	,	database
@@ -46,6 +46,7 @@ app.post("/login", function loginValidate(req, res, next){
 			res.send(500);
 		}else{
 			if(rows.length === 0){
+				crypt.encrypt(crypt.random());
 				res.send(401);
 			}else{
 				if(crypt.isPassword(req.body.password, rows[0].passHash, rows[0].salt)){
@@ -105,16 +106,30 @@ app.del("/deleteUser", function(req, res, next){
 });
 
 app.get("/search/:word", function(req, res, next){
+	var sqlResp;
+	
   database.query(query.word(req.word), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
 			if(rows.length === 0){
-				database.query(query.top(req.word), function(err, rows, fields){
+				database.query(query.top(req.word, 30), function(err, rows, fields){
 					if(err){
 						next(err, req, res);
 					}else{
-						res.json(rows);
+						//jeœli jest mniej ni¿ 30, to dope³nij szukaj¹c po znaczeniach
+						if(rows.length < 30){
+							sqlResp = rows;
+							database.query(query.expl(req.word, 30), function(err, rows, fields){
+								if(err){
+									next(err, req, res);
+								}else{
+									res.json(unique(sqlResp.concat(rows)).slice(0, 30));
+								}
+							});
+						}else{
+							res.json(rows);
+						}
 					}
 				});
 			}else{
@@ -293,3 +308,86 @@ function errorHandler(err, req, res, next){
 		});
 	}
 })();
+
+
+function protoName(vArg){
+	return Object.prototype.toString.call(vArg);
+}
+
+function uniqueComp(a, b){
+	var type = typeof a
+		,	i;
+	if(type !== typeof b){
+		return false;
+	}else{
+		switch(type){
+			case "number":
+				return a === b ||
+					(isNaN(a) && isNaN(b));
+			case "object":
+				type = protoName(a);
+				if(type	=== protoName(b)){
+					switch(type){
+						case "[object Array]":
+							type = a.length;
+							if(type !== b.length){
+								return false;
+							}
+							for(i = 0; i < type; ++i){
+								if(!uniqueComp(a[i], b[i])){
+									return false;
+								}
+							}
+							return true;
+						case "[object Object]":
+							for(i in a){
+								if(!uniqueComp(a[i], b[i])){
+									return false;
+								}
+							}
+							return true;
+						case "[object RegExp]":
+							return a.toString() === b.toString();
+						default:
+							return a === b;
+					}
+				}else{
+					return false;
+				}
+			default:
+				return a === b;
+		}
+	}
+}
+
+/**
+	Slightly modified standard:
+	uniqueComp returns true for objects
+	or arrays that have the same properties,
+	although they may have different references,
+	so:
+	
+	uniqueComp({prop: 5}, {prop: 5})
+	//true
+	
+	{prop: 5} === {prop: 5}
+	//false
+	*/
+
+function unique(arr){
+	var a = []
+		,	l = arr.length
+		,	i
+		,	j
+		,	f;
+	for(i = 0; i < l; ++i) {
+		for(j = 0; j < a.length; ++j) {
+			if(uniqueComp(arr[i], a[j])){
+				i += 1;
+				j = 0;
+			}
+		}
+		a.push(arr[i]);
+	}
+	return a;
+};

@@ -20,6 +20,7 @@ $(function(){
 			,	buttonAll: $("#buttonAll")
 			,	selLearnt: $("#selLearnt")
 			,	selImpo: $("#selImpo")
+			,	selType: $("#selType")
 			,	info: $("#info")
 			,	loginForm: $("#loginForm")
 			,	loginWrapper: $("#loginWrapper")
@@ -46,7 +47,9 @@ $(function(){
 			parsed = $("<em>");
 		}
 		
-		if(!wordObj.learnt){
+		if(wordObj.learnt){
+			parsed.addClass("learnt");
+		}else{
 			parsed.addClass("notlearnt");
 		}
 		
@@ -105,19 +108,20 @@ $(function(){
 	
 	function appendWords(data){
 		var $list = $("<ul>")
-			,	i;
+			,	i
+			,	len = data.length;
 		
-		if(data.length === 1){
+		if(len === 1){
 			fillForm(data[0]);
-		}else if(data.length === 0){
+		}else if(len === 0){
 			emptyForm();
 			$selectors.def.empty();
 		}else{
-			for(i = 0; i < data.length; ++i){
+			for(i = 0; i < len; ++i){
 				$("<li>").html(parseWord(data[i])).appendTo($list);
 			}
 			$selectors.def.empty();
-			$selectors.def.append($list)
+			$selectors.def.append($("<p>").text(len + " search results:")).append($list)
 		}
 	}
 	
@@ -132,7 +136,6 @@ $(function(){
 		,	data: word
 		,	success: function(data){
 				$selectors.info.text(data);
-				$selectors.def.empty();
 			}
 		,	statusCode: {
 				401: tellToLogIn
@@ -154,7 +157,6 @@ $(function(){
 		,	url: "/edit/" + word
 		,	success: function(data){
 				$selectors.info.text(data);
-				$selectors.def.empty();
 			}
 		,	statusCode: {
 				401: tellToLogIn
@@ -195,25 +197,22 @@ $(function(){
 	}
 	
 	function getSearchOptions(opt){
+		var i
+			,	optArr;
 		opt = opt || {};
 		
-		switch($selectors.selImpo[0].value){
-			case "true":
-				opt.important = "1";
-				break;
-			case "false":
-				opt.important = "0";
-				break;
-		}
-		switch($selectors.selLearnt[0].value){
-			case "true":
-				opt.learnt = "1";
-				break;
-			case "false":
-				opt.learnt = "0";
-				break;
-		}
+		optArr = [
+			{ value: $selectors.selImpo[0].value, prop: "important" }
+		,	{ value: $selectors.selLearnt[0].value, prop: "learnt" }
+		,	{ value: $selectors.selType[0].value, prop: "type" }
+		];
 		
+		for(i = 0; i < optArr.length; ++i){console.log(optArr[i]);
+			if(optArr[i].value != "all"){console.log("yes");
+				opt[optArr[i].prop] = optArr[i].value;
+			}
+		}
+console.log(opt);
 		return opt;
 	}
 	
@@ -475,6 +474,12 @@ $(function(){
 		for(i = 0; i < fields.length; ++i){
 			$selectors[fields[i]] = $("#" + fields[i]);
 		}
+		
+		$selectors.selType
+			.children()
+			.slice(1)
+			.clone()
+			.appendTo($selectors.type);		
 		
 		overwriteSubmit($selectors.searchForm, submitSearch);
 		overwriteSubmit($selectors.editForm, submitEdit);
