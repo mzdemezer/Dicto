@@ -2,72 +2,89 @@ doctype 5
 html
 	head
 		title Dicto
-		link(rel="stylesheet", href="/stylesheets/style.css")
+		style(type="text/css", id="hide")
+			body {
+				display: none;
+			}
 		block scripts
-			script(type="text/javascript", src="/javascripts/jquery.js")
-			script(type="text/javascript", src="/javascripts/jquery-ui.js")
+			script(type="text/javascript", id="init")
+				var thisScript = document.getElementById("init")
+					,	head = document.getElementsByTagName("head")[0]
+					,	otherFiles = !{otherFiles};		
+				
+				get("/standard" + otherFiles, function(data){
+					data = JSON.parse(data);
+					
+					appendArray(data);
+					
+					tidyUp();
+				}, tidyUp);
+				
+				function protoName(vArg){
+					return Object.prototype.toString.call(vArg);
+				}
+				
+				function get(path, success, failure){
+					var req = new XMLHttpRequest();
+					success = success || function(){};
+					failure = failure || function(){};
+
+					req.onreadystatechange = function(){
+						if(req.readyState === 4){
+							if(req.status === 200){
+								success(req.responseXML || req.responseText);
+							}else{
+								failure(req.responseXML || req.responseText);
+							}
+						}
+					};
+					req.open("GET", path);
+					req.send();
+				}
+				
+				function tidyUp(){
+					thisScript.parentNode.removeChild(thisScript);
+				}
+				
+				function appendElem(elem){
+					head.appendChild(elem);
+				}
+				
+				function appendFile(file){
+					var newFile;
+					if(typeof file === "object"){
+						switch(protoName(file)){
+							case "[object Object]":
+								switch(file.format){
+									case "css":
+										newFile = document.createElement("style");
+										newFile.setAttribute("type", "text/css");
+										newFile.textContent = file.file;
+										appendElem(newFile);
+										break;
+									case "js":
+										newFile = document.createElement("script");
+										newFile.setAttribute("type", "text/javascript");
+										newFile.textContent = file.file;
+										appendElem(newFile);
+										break;
+									default:
+										console.log(file.file);
+								}
+								break;
+							case "[object Array]":
+								appendArray(file);
+								break;
+						}
+					}
+				}
+				
+				function appendArray(arr){
+					var i;
+					for(i = 0; i < arr.length; ++i){
+						appendFile(arr[i]);
+					}
+				}
 	body
 		h1.title Dicto
-		#userPanel.clri.abso
-			form#loginForm.opa
-				fieldset
-					#registerWrapper.divStd
-						p.textStd You don't have an account?
-						h4.textStd Register now!
-						input(type="button", value="Register")#buttonRegister
-					h2#userInfo.info #{userId}
-					#loginWrapper
-						.block
-							input(type="text")#loginId
-							label(for="loginId") User
-						.block
-							input(type="password")#loginPass
-							label(for="loginPass") Password
-					.floatLeft
-						input(type="submit", value="Log in")#buttonLogin
-					.floatRight
-						input(type="button", value="Delete user")#buttonDelete
-		#content
-			.floatLeft.divStd
-				.floatLeft.divStd.searchRes
-					form#searchForm
-						fieldset
-							input(type="text")#textWord
-							input(type="submit", value="Search")#buttonWord
-							.block
-								select#selLearnt
-									option(value="all") Whatever
-									option(value="1") Yes
-									option(value="0") No!
-								label(for="selLearnt") Learnt
-							.block
-								select#selImpo
-									option(value="all") Whatever
-									option(value="1") Yes
-									option(value="0") No!
-								label(for="selImpo") Important
-							.block
-								select#selType
-									option(value="all") Whatever
-									option(value="v") v
-									option(value="nf") nf
-									option(value="nm") nm
-									option(value="n") nmf
-									option(value="npl") npl
-									option(value="adj") adj
-									option(value="adv") adv
-									option(value="prep") prep
-									option(value="conj") conj
-									option(value="pron") pron
-									option(value="excl") excl
-									option(value="expr") expr
-								label(for="selType") Class
-						fieldset
-							input(type="text")#textChapter
-							input(type="button", value="Show chapters")#buttonChapter
-						fieldset
-							input(type="button", value="Show all")#buttonAll
-						#def
-				block content
-			.wrcont.floatLeft.divStd
-				block WR
+		block content

@@ -1,33 +1,89 @@
 
 extends layout
 
-append scripts
-	script(type="text/javascript", src="/javascripts/index.js")
-
 block content
-	.floatLeft.divStd
-		form#editForm
+	#userPanel.clri.abso
+		form#loginForm.opa
 			fieldset
-				label(for="word") Word
-				input(type="text")#word.block
-				label(for="type") Class
-				select#type.block
-				label(for="pronunciation") Pronunciation
-				input(type="text")#pronunciation.block
-				label(for="explanation") Explanation
-				textarea(rows="15", cols="30")#explanation.block
-				label(for="chapter") Chapter
-				input(type="number", value="0")#chapter.block
-				.block
-					input(type="checkbox")#important
-					label(for="important") Important
-				.block
-					input(type="checkbox")#learnt
-					label(for="learnt") Learnt
-			fieldset
-				input(type="submit", value="Save")#save
-				input(type="button", value="Delete")#del
-				p#info.info
-
-block WR
-	iframe(width="100%", height="100%")#WRiframe
+				#registerWrapper.divStd
+					p.textStd You don't have an account?
+					h4.textStd Register now!
+					input(type="button", value="Register")#buttonRegister
+				h2#userInfo.info #{userId}
+				#loginWrapper
+					.block
+						input(type="text")#loginId
+						label(for="loginId") User
+					.block
+						input(type="password")#loginPass
+						label(for="loginPass") Password
+				.floatLeft
+					input(type="submit", value="Log in")#buttonLogin
+				.floatRight
+					input(type="button", value="Delete user")#buttonDelete
+	#content
+		.floatLeft.divStd
+			.floatLeft.divStd.searchRes
+				form#searchForm
+					fieldset
+						input(type="text")#textWord
+						input(type="submit", value="Search")#buttonWord
+						.block
+							select#selLearnt
+								option(value="all") Whatever
+								option(value="1") Yes
+								option(value="0") No!
+							label(for="selLearnt") Learnt
+						.block
+							select#selImpo
+								option(value="all") Whatever
+								option(value="1") Yes
+								option(value="0") No!
+							label(for="selImpo") Important
+						.block
+							select#selType
+								option(value="all") Whatever
+								option(value="v") v
+								option(value="nf") nf
+								option(value="nm") nm
+								option(value="n") nmf
+								option(value="npl") npl
+								option(value="adj") adj
+								option(value="adv") adv
+								option(value="prep") prep
+								option(value="conj") conj
+								option(value="pron") pron
+								option(value="excl") excl
+								option(value="expr") expr
+							label(for="selType") Class
+					fieldset
+						input(type="text")#textChapter
+						input(type="button", value="Show chapters")#buttonChapter
+					fieldset
+						input(type="button", value="Show all")#buttonAll
+					#def
+			.floatLeft.divStd
+				form#editForm
+					fieldset
+						label(for="word") Word
+						input(type="text")#word.block
+						label(for="type") Class
+						select#type.block
+						label(for="pronunciation") Pronunciation
+						input(type="text")#pronunciation.block
+						label(for="explanation") Explanation
+						textarea(rows="15", cols="30")#explanation.block
+						label(for="chapter") Chapter
+						input(type="number", value="0")#chapter.block
+						.block
+							input(type="checkbox")#important
+							label(for="important") Important
+						.block
+							input(type="checkbox")#learnt
+							label(for="learnt") Learnt
+					fieldset
+						input(type="submit", value="Save")#save
+						input(type="button", value="Delete")#del
+						p#info.info
+		.wrcont.floatLeft.divStd
+			iframe(width="100%", height="100%")#WRiframe

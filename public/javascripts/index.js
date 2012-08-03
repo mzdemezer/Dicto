@@ -212,7 +212,7 @@ $(function(){
 				opt[optArr[i].prop] = optArr[i].value;
 			}
 		}
-console.log(opt);
+
 		return opt;
 	}
 	
@@ -496,6 +496,11 @@ console.log(opt);
 			overwriteSubmit($selectors.loginForm, submitLogin);
 			$selectors.buttonDelete.hide();
 		}
+		
+		/**
+			Render
+			*/
+		$("#hide").detach();
 		
 		$selectors.buttonRegister.on("click", activateRegister);
 		

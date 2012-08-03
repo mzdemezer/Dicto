@@ -6,7 +6,9 @@ var http = require("http")
 	,	crypt = require("crypt")
 	,	database
 	,	app = express()
-	,	query = require("queries");
+	,	query = require("queries")
+	,	jsonicate = require("fileJSONicator")
+	,	files;
 
 app.configure(function(){
   app.set("port", process.env.PORT || 80);
@@ -33,11 +35,30 @@ app.param("word", function(req, res, next, word){
 });
 
 app.get("/", function(req, res, next){
-	var userId = { userId: "" };
+	var opts = {
+		userId: ""
+	, otherFiles: "'?files=[\"index\"]'"
+	};
 	if(req.logged){
-		userId.userId = req.cookies["logged-user-id"].userId;
+		opts.userId = req.cookies["logged-user-id"].userId;
 	}
-  res.render("index", userId);
+  res.render("index", opts);
+});
+
+app.get(addParamsToURL("/standard"), parseURLjson("/standard"), function(req, res, next){
+	var otherFiles = []
+		,	i;
+	try{
+		req.body.files = JSON.parse(req.body.files);
+		for(i = 0; i < req.body.files.length; ++i){
+			if(files[req.body.files[i]]){
+				otherFiles.push(files[req.body.files[i]]);
+			}
+		}
+	}catch(err){
+		otherFiles = [];
+	}
+	res.json(files.standard.concat(otherFiles));
 });
 
 app.post("/login", function loginValidate(req, res, next){
@@ -117,7 +138,6 @@ app.get("/search/:word", function(req, res, next){
 					if(err){
 						next(err, req, res);
 					}else{
-						//jeœli jest mniej ni¿ 30, to dope³nij szukaj¹c po znaczeniach
 						if(rows.length < 30){
 							sqlResp = rows;
 							database.query(query.expl(req.word, 30), function(err, rows, fields){
@@ -162,7 +182,7 @@ function parseGetJSON(str){
 function parseURLjson(URLregExpStr){
 	URLregExpStr = addParamsToURL(URLregExpStr);
 	return function(req, res, next){
-		req.body = parseGetJSON(URLregExpStr.exec(req.url)[1]);
+		req.body = parseGetJSON(URLregExpStr.exec(unescape(req.url))[1]);
 		next();
 	};
 }
@@ -251,17 +271,26 @@ function errorHandler(err, req, res, next){
 (function init(){
 	function startServer(){
 		console.log("The server is connected to MySQL database");
+		files = {
+			standard: jsonicate([
+					"/public/stylesheets/style.css"
+				,	"/public/javascripts/jquery.js"
+				,	"/public/javascripts/jquery-ui.js"
+				], __dirname)
+		,	index: jsonicate([ "/public/javascripts/index.js" ], __dirname)
+		};
+
 		app.listen(app.get("port"), function(){
 			console.log("Express server listening on port " + app.get("port"));
 		});
 	}
 	
-	function correctString(data){
+	function removeNextLine(data){
 		return /^([^\n\r]*)/.exec(data)[1];
 	}
 	
 	function startApp(pass){
-		pass = correctString(pass);
+		pass = removeNextLine(pass);
 		database = mysql.createConnection({
 			host     : "localhost"
 		,	user     : "root"
