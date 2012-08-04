@@ -2,13 +2,13 @@ doctype 5
 html
 	head
 		title Dicto
-		style(type="text/css", id="hide")
+		style(type="text/css", id="__$hide")
 			body {
 				display: none;
 			}
 		block scripts
-			script(type="text/javascript", id="init")
-				var thisScript = document.getElementById("init")
+			script(type="text/javascript", id="__$init")
+				var thisScript = document.getElementById("__$init")
 					,	head = document.getElementsByTagName("head")[0]
 					,	otherFiles = !{otherFiles};		
 				
@@ -44,6 +44,7 @@ html
 				
 				function tidyUp(){
 					thisScript.parentNode.removeChild(thisScript);
+					delete thisScript;
 				}
 				
 				function appendElem(elem){
@@ -84,6 +85,16 @@ html
 					for(i = 0; i < arr.length; ++i){
 						appendFile(arr[i]);
 					}
+				}
+			script(type="text/javascript", id="__$render")
+				function __render(){
+					var thisScript = document.getElementById("__$render")
+						,	hideStyle = document.getElementById("__$hide");
+
+					hideStyle.parentNode.removeChild(hideStyle);
+					delete hideStyle;
+					thisScript.parentNode.removeChild(thisScript);
+					delete thisScript;
 				}
 	body
 		h1.title Dicto

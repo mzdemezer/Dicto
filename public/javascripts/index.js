@@ -32,6 +32,7 @@ $(function(){
 			,	buttonRegister: $("#buttonRegister")
 			,	registerWrapper: $("#registerWrapper")
 			,	buttonDelete: $("#buttonDelete")
+			,	studyWrapper: $("#studyWrapper")
 			,	WRiframe: $("#WRiframe")
 			}
 		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/;
@@ -348,6 +349,20 @@ $(function(){
 		$selectors.registerWrapper.show("blind", time);
 	}
 	
+	function hideStudyWrapper(time){
+		if(time == null){
+			time = 1000;
+		}
+		$selectors.studyWrapper.hide("blind", time);
+	}
+	
+	function showStudyWrapper(time){
+		if(time == null){
+			time = 1000;
+		}
+		$selectors.studyWrapper.show("blind", time);
+	}
+	
 	function hideLoginWrapper(time){
 		if(time == null){
 			time = 1000;
@@ -421,6 +436,7 @@ $(function(){
 		shuffleUserInfo("Welcome " + userId + "!", time, time);
 		shuffleLoginButton("Log out");
 		showDeleteButton("Delete user", 1100);
+		showStudyWrapper();
 		$selectors.loginPass.attr("value", "");
 	}
 	
@@ -429,6 +445,7 @@ $(function(){
 		showRegisterWrapper(time);
 		shuffleUserInfo("Log in", time, time);
 		shuffleLoginButton("Log in");
+		hideStudyWrapper();
 		hideDeleteButton();
 	}
 	
@@ -495,12 +512,10 @@ $(function(){
 			$selectors.userInfo.text("Log in");
 			overwriteSubmit($selectors.loginForm, submitLogin);
 			$selectors.buttonDelete.hide();
+			$selectors.studyWrapper.hide();
 		}
 		
-		/**
-			Render
-			*/
-		$("#hide").detach();
+		__render();
 		
 		$selectors.buttonRegister.on("click", activateRegister);
 		

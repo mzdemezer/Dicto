@@ -16,6 +16,7 @@ app.configure(function(){
   app.set("view engine", "jade");
 	app.set("view options", { layout: false });
   app.use(express.logger("dev"));
+	app.use(express.favicon(/*__dirname + path*/));
   app.use(express.bodyParser());
 	app.use(express.cookieParser());
 	app.use(store.authenticate);
@@ -34,10 +35,33 @@ app.param("word", function(req, res, next, word){
 	next();
 });
 
+/**
+	Wraps nicely string or array of strings
+	that represent requested modules into	format:
+	
+		'?files=["module_1", "module_2", ..., "module_n"]'
+	*/
+var getFileParams = (function(){
+	function wrap(str){
+		return "'?files=[\"" + str + "\"]'";
+	}
+
+	return function(arg){
+		if(typeof arg === "object"){
+			if(protoName(arg) === "[object Array]"){
+				return wrap(arg.join("\",\""));
+			}
+		}else if(typeof arg === "string"){
+			return wrap(arg);
+		}
+		return "";
+	}
+})();
+
 app.get("/", function(req, res, next){
 	var opts = {
 		userId: ""
-	, otherFiles: "'?files=[\"index\"]'"
+	, otherFiles: getFileParams("index")
 	};
 	if(req.logged){
 		opts.userId = req.cookies["logged-user-id"].userId;
@@ -241,6 +265,40 @@ app.del("/edit/:word", function(req, res, next){
 	}
 });
 
+app.get("/learn", function(req, res, next){
+	var opts;
+
+	if(req.logged){
+		opts = {
+			userId: ""
+		, otherFiles: getFileParams("learn")
+		};
+		if(req.logged){
+			opts.userId = req.cookies["logged-user-id"].userId;
+		}
+		res.render("learn", opts);
+	}else{
+		res.send(401);
+	}
+});
+
+app.get("/test", function(req, res, next){
+	var opts;
+
+	if(req.logged){
+		opts = {
+			userId: ""
+		, otherFiles: getFileParams("test")
+		};
+		if(req.logged){
+			opts.userId = req.cookies["logged-user-id"].userId;
+		}
+		res.render("test", opts);
+	}else{
+		res.send(401);
+	}
+});
+
 function getTableName(err){
 	return err.toString()
 		.split(" ")[3]
@@ -277,7 +335,9 @@ function errorHandler(err, req, res, next){
 				,	"/public/javascripts/jquery.js"
 				,	"/public/javascripts/jquery-ui.js"
 				], __dirname)
-		,	index: jsonicate([ "/public/javascripts/index.js" ], __dirname)
+		,	index: jsonicate([ "/public/javascripts/index.js" ],		__dirname)
+		,	learn: jsonicate([ "/public/javascripts/learn.js" ], __dirname)
+		,	test: jsonicate([ "/public/javascripts/test.js" ], __dirname)
 		};
 
 		app.listen(app.get("port"), function(){
