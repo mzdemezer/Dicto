@@ -8,7 +8,9 @@ var http = require("http")
 	,	app = express()
 	,	query = require("queries")
 	,	jsonicate = require("fileJSONicator")
-	,	files;
+	,	files
+	,	urlParams = require("urlParams")
+	,	reqFileParams = require("reqFileParams");
 
 app.configure(function(){
   app.set("port", process.env.PORT || 80);
@@ -35,33 +37,10 @@ app.param("word", function(req, res, next, word){
 	next();
 });
 
-/**
-	Wraps nicely string or array of strings
-	that represent requested modules into	format:
-	
-		'?files=["module_1", "module_2", ..., "module_n"]'
-	*/
-var getFileParams = (function(){
-	function wrap(str){
-		return "'?files=[\"" + str + "\"]'";
-	}
-
-	return function(arg){
-		if(typeof arg === "object"){
-			if(protoName(arg) === "[object Array]"){
-				return wrap(arg.join("\",\""));
-			}
-		}else if(typeof arg === "string"){
-			return wrap(arg);
-		}
-		return "";
-	}
-})();
-
 app.get("/", function(req, res, next){
 	var opts = {
 		userId: ""
-	, otherFiles: getFileParams("index")
+	, otherFiles: reqFileParams("index")
 	};
 	if(req.logged){
 		opts.userId = req.cookies["logged-user-id"].userId;
@@ -69,14 +48,15 @@ app.get("/", function(req, res, next){
   res.render("index", opts);
 });
 
-app.get(addParamsToURL("/standard"), parseURLjson("/standard"), function(req, res, next){
+app.get(urlParams.register("/standard"), urlParams("/standard"), function(req, res, next){
 	var otherFiles = []
-		,	i;
+		,	i
+		,	url_files = req.body.urlParams.files;
 	try{
-		req.body.files = JSON.parse(req.body.files);
-		for(i = 0; i < req.body.files.length; ++i){
-			if(files[req.body.files[i]]){
-				otherFiles.push(files[req.body.files[i]]);
+		url_files = JSON.parse(url_files);
+		for(i = 0; i < url_files.length; ++i){
+			if(files[url_files[i]]){
+				otherFiles.push(files[url_files[i]]);
 			}
 		}
 	}catch(err){
@@ -134,20 +114,18 @@ app.post("/newUser", function(req, res, next){
 	});
 });
 
-app.del("/deleteUser", function(req, res, next){
+app.del("/deleteUser", requireLogged(function(req, res, next){
+	res.send(401);
+}), function(req, res, next){
 	var userId;
-	if(req.logged){
-		userId = store.endSession(req, res);
-		database.query(query.delUser(userId), function(err, rows, fields){
-			if(err){
-				res.send(500)
-			}else{
-				res.send(200);
-			}
-		});
-	}else{
-		res.send(401);
-	}
+	userId = store.endSession(req, res);
+	database.query(query.delUser(userId), function(err, rows, fields){
+		if(err){
+			res.send(500)
+		}else{
+			res.send(200);
+		}
+	});
 });
 
 app.get("/search/:word", function(req, res, next){
@@ -183,120 +161,83 @@ app.get("/search/:word", function(req, res, next){
 	});
 });
 
-function addParamsToURL(str){
-	str.replace("/", "\\\/");
-	return RegExp("^" + str + "?([^\/]*)$")
-}
+app.get(urlParams.register("/chapters"), urlParams("/chapters"), function(req, res, next){
+	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
+		if(err){
+			next(err, req, res);
+		}else{
+			res.json(rows);
+		}
+	});
+});
 
-function parseGetJSON(str){
-	var i
-		,	json = {};
-	if(str[0] === "?"){
-		str = str.slice(1);
-	}
-	str = str.split("&");
-	
-	for(i = 0; i < str.length; ++i){
-		str[i] = str[i].split("=");
-		json[str[i][0]] = str[i][1]
-	}
-	return json;
-}
+app.post("/edit", requireLogged(function(req, res, next){
+	res.send(401);
+}), function(req, res, next){
+	database.query(query.del(req.body.word), function(err, rows, fields){
+		if(err){
+			next(err, req, res);
+		}else{
+			database.query(query.insert(req.body), function(err, rows, fields){
+				if(err){
+					next(err, req, res);
+				}else{
+					res.send("Edited: " + req.body.word);
+				}
+			});
+		}
+	});
+});
 
-function parseURLjson(URLregExpStr){
-	URLregExpStr = addParamsToURL(URLregExpStr);
-	return function(req, res, next){
-		req.body = parseGetJSON(URLregExpStr.exec(unescape(req.url))[1]);
-		next();
+app.del("/edit/:word", requireLogged(function(req, res, next){
+	res.send(401);
+}), function(req, res, next){
+	database.query(query.del(req.word), function(err, rows, fields){
+		if(err){
+			next(err, req, res);
+		}else{
+			res.send("Deleted: " + req.word);
+		}
+	});
+});
+
+app.get("/learn", requireLogged(), function(req, res, next){
+	var opts;
+
+	opts = {
+		userId: ""
+	, otherFiles: reqFileParams("learn")
 	};
-}
-
-app.get(addParamsToURL("/all"), parseURLjson("/all"), function(req, res, next){
-	database.query(query.all(req.body), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.json(rows);
-		}
-	});
-});
-
-app.get(addParamsToURL("/chapters"), parseURLjson("/chapters"), function(req, res, next){
-	database.query(query.chapter(req.body), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.json(rows);
-		}
-	});
-});
-
-app.post("/edit", function(req, res, next){
 	if(req.logged){
-		database.query(query.del(req.body.word), function(err, rows, fields){
-			if(err){
-				next(err, req, res);
-			}else{
-				database.query(query.insert(req.body), function(err, rows, fields){
-					if(err){
-						next(err, req, res);
-					}else{
-						res.send("Edited: " + req.body.word);
-					}
-				});
-			}
-		});
-	}else{
-		res.send(401);
+		opts.userId = req.cookies["logged-user-id"].userId;
 	}
+	res.render("learn", opts);
+
 });
 
-app.del("/edit/:word", function(req, res, next){
-	if(req.logged){
-		database.query(query.del(req.word), function(err, rows, fields){
-			if(err){
-				next(err, req, res);
-			}else{
-				res.send("Deleted: " + req.word);
-			}
-		});
-	}else{
-		res.send(401);
-	}
-});
-
-app.get("/learn", function(req, res, next){
+app.get("/test", requireLogged(), function(req, res, next){
 	var opts;
 
-	if(req.logged){
-		opts = {
-			userId: ""
-		, otherFiles: getFileParams("learn")
-		};
-		if(req.logged){
-			opts.userId = req.cookies["logged-user-id"].userId;
-		}
-		res.render("learn", opts);
-	}else{
-		res.send(401);
-	}
+	opts = {
+		userId: req.cookies["logged-user-id"].userId
+	, otherFiles: reqFileParams("test")
+	};
+
+	res.render("test", opts);
 });
 
-app.get("/test", function(req, res, next){
+app.get(urlParams.register("/test/fill"), urlParams("/test/fill"), requireLogged(), function(req, res, next){
 	var opts;
 
-	if(req.logged){
+	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
 		opts = {
-			userId: ""
-		, otherFiles: getFileParams("test")
+			userId: req.cookies["logged-user-id"].userId
+		, otherFiles: reqFileParams("fill")
+		,	words: JSON.stringify(rows)
 		};
-		if(req.logged){
-			opts.userId = req.cookies["logged-user-id"].userId;
-		}
-		res.render("test", opts);
-	}else{
-		res.send(401);
-	}
+
+		res.render("fill", opts);
+	});
 });
 
 function getTableName(err){
@@ -306,6 +247,19 @@ function getTableName(err){
 		.split(".")[1];
 }
 
+function requireLogged(errHandler){
+	errHandler = errHandler || function(req, res, next){
+		res.redirect("/");
+	}
+
+	return function(req, res, next){
+		if(req.logged){
+			next();
+		}else{
+			errHandler(req, res, next);
+		}
+	}
+}
 function errorHandler(err, req, res, next){
 	var query;
 	if(err.code === "ER_NO_SUCH_TABLE"){
@@ -338,6 +292,7 @@ function errorHandler(err, req, res, next){
 		,	index: jsonicate([ "/public/javascripts/index.js" ],		__dirname)
 		,	learn: jsonicate([ "/public/javascripts/learn.js" ], __dirname)
 		,	test: jsonicate([ "/public/javascripts/test.js" ], __dirname)
+		,	fill: jsonicate([ "/public/javascripts/fill.js" ], __dirname)
 		};
 
 		app.listen(app.get("port"), function(){

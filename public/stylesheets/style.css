@@ -147,7 +147,7 @@ p, h4, .info {
 }
 
 .cl {
-	right: 50%;
+	right: 42%;
 	top: 35%;
 }
 
@@ -163,7 +163,7 @@ p, h4, .info {
 	-o-transition: all 0.3s ease-in-out 0.05s;
 }
 
-.opa:hover {
+.opa:hover, .opafocus {
 	opacity: 1.0;
 }
 

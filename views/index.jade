@@ -1,7 +1,7 @@
 
-extends layout
+extends search
 
-block content
+prepend content
 	#userPanel.clri.abso
 		form#loginForm.opa
 			fieldset
@@ -24,69 +24,44 @@ block content
 					input(type="submit", value="Log in")#buttonLogin
 				.floatRight
 					input(type="button", value="Delete user")#buttonDelete
-	#content
-		.floatLeft.divStd
-			.floatLeft.divStd.searchRes
-				form#searchForm
-					fieldset
-						input(type="text")#textWord
-						input(type="submit", value="Search")#buttonWord
-						.block
-							select#selLearnt
-								option(value="all") Whatever
-								option(value="1") Yes
-								option(value="0") No!
-							label(for="selLearnt") Learnt
-						.block
-							select#selImpo
-								option(value="all") Whatever
-								option(value="1") Yes
-								option(value="0") No!
-							label(for="selImpo") Important
-						.block
-							select#selType
-								option(value="all") Whatever
-								option(value="v") v
-								option(value="nf") nf
-								option(value="nm") nm
-								option(value="n") nmf
-								option(value="npl") npl
-								option(value="adj") adj
-								option(value="adv") adv
-								option(value="prep") prep
-								option(value="conj") conj
-								option(value="pron") pron
-								option(value="excl") excl
-								option(value="expr") expr
-							label(for="selType") Class
-					fieldset
-						input(type="text")#textChapter
-						input(type="button", value="Show chapters")#buttonChapter
-					fieldset
-						input(type="button", value="Show all")#buttonAll
-					#def
-			.floatLeft.divStd
-				form#editForm
-					fieldset
-						label(for="word") Word
-						input(type="text")#word.block
-						label(for="type") Class
-						select#type.block
-						label(for="pronunciation") Pronunciation
-						input(type="text")#pronunciation.block
-						label(for="explanation") Explanation
-						textarea(rows="15", cols="30")#explanation.block
-						label(for="chapter") Chapter
-						input(type="number", value="0")#chapter.block
-						.block
-							input(type="checkbox")#important
-							label(for="important") Important
-						.block
-							input(type="checkbox")#learnt
-							label(for="learnt") Learnt
-					fieldset
-						input(type="submit", value="Save")#save
-						input(type="button", value="Delete")#del
-						p#info.info
+
+prepend engineOpts
+	input(type="text")#textWord
+	input(type="submit", value="Search")#buttonWord
+
+append engineChapter
+	input(type="button", value="Show chapters")#chapterButton
+	
+block engineRest
+	fieldset
+		input(type="button", value="Show all")#buttonAll
+	#def
+
+block modify
+	.floatLeft.divStd
+		form#editForm
+			fieldset
+				label(for="word") Word
+				input(type="text")#word.block
+				label(for="type") Class
+				select#type.block
+				label(for="pronunciation") Pronunciation
+				input(type="text")#pronunciation.block
+				label(for="explanation") Explanation
+				textarea(rows="15", cols="30")#explanation.block
+				label(for="chapter") Chapter
+				input(type="number", value="0")#chapter.block
+				.block
+					input(type="checkbox")#important
+					label(for="important") Important
+				.block
+					input(type="checkbox")#learnt
+					label(for="learnt") Learnt
+			fieldset
+				input(type="submit", value="Save")#save
+				input(type="button", value="Delete")#del
+				p#info.info
+
+block WR
 		.wrcont.floatLeft.divStd
 			iframe(width="100%", height="100%")#WRiframe

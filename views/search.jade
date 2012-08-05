@@ -1,0 +1,44 @@
+
+extends layout
+
+block content
+	#content
+		.floatLeft.divStd
+			.floatLeft.divStd.searchRes
+				form#searchForm
+					fieldset
+						block engineOpts
+							.block
+								select#selLearnt
+									option(value="all") Whatever
+									option(value="1") Yes
+									option(value="0") No!
+								label(for="selLearnt") Learnt
+							.block
+								select#selImpo
+									option(value="all") Whatever
+									option(value="1") Yes
+									option(value="0") No!
+								label(for="selImpo") Important
+							.block
+								select#selType
+									option(value="all") Whatever
+									option(value="v") v
+									option(value="nf") nf
+									option(value="nm") nm
+									option(value="n") nmf
+									option(value="npl") npl
+									option(value="adj") adj
+									option(value="adv") adv
+									option(value="prep") prep
+									option(value="conj") conj
+									option(value="pron") pron
+									option(value="excl") excl
+									option(value="expr") expr
+								label(for="selType") Class
+					fieldset
+						block engineChapter
+							input(type="text", value="0")#chapterText
+					block engineRest
+			block modify
+		block WR

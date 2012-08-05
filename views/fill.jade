@@ -1,0 +1,12 @@
+
+extends layout
+
+append scripts
+	script(type="text/javascript")
+		var words = !{words};
+
+block content
+	#content
+		h1 Test
+		a.stdAnc(href="/") Home
+		a.stdAnc(href="/test") Back

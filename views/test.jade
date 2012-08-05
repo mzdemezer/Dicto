@@ -1,7 +1,15 @@
 
-extends layout
+extends search
 
-block content
-	#content
+prepend content
+	#header
 		h1 Test
 		a.stdAnc(href="/") Home
+		a.stdAnc(href="/test/fill").testAnc Fill in the blanks
+
+prepend engineChapter
+	.block
+		input(type="checkbox", id="chapterCheck", checked="checked")
+		label(for="chapterCheck") All chapters
+	label(for="chapterText", id="chapterLabel").block Choose chapters:
+	

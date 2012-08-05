@@ -15,8 +15,8 @@ $(function(){
 			,	searchForm: $("#searchForm")
 			,	editForm: $("#editForm")
 			,	del: $("#del")
-			,	textChapter: $("#textChapter")
-			,	buttonChapter: $("#buttonChapter")
+			,	chapterText: $("#chapterText")
+			,	chapterButton: $("#chapterButton")
 			,	buttonAll: $("#buttonAll")
 			,	selLearnt: $("#selLearnt")
 			,	selImpo: $("#selImpo")
@@ -35,8 +35,59 @@ $(function(){
 			,	studyWrapper: $("#studyWrapper")
 			,	WRiframe: $("#WRiframe")
 			}
-		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/;
+		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/g;
 	
+	(function init(){
+		var i
+			,	user = $selectors.userInfo.text()
+			,	opa = $(".opa");
+		for(i = 0; i < fields.length; ++i){
+			$selectors[fields[i]] = $("#" + fields[i]);
+		}
+		
+		$selectors.selType
+			.children()
+			.slice(1)
+			.clone()
+			.appendTo($selectors.type);		
+		
+		overwriteSubmit($selectors.searchForm, submitSearch);
+		overwriteSubmit($selectors.editForm, submitEdit);
+		
+		if(user){
+			$selectors.loginWrapper.hide();
+			$selectors.registerWrapper.hide();
+			$selectors.userInfo.text("Welcome " + user + "!");
+			$selectors.buttonLogin.attr("value", "Log out");
+			overwriteSubmit($selectors.loginForm, submitLogout);
+			deleteUserClick(submitDeleteUser);
+		}else{
+			$selectors.userInfo.text("Log in");
+			overwriteSubmit($selectors.loginForm, submitLogin);
+			$selectors.buttonDelete.hide();
+			$selectors.studyWrapper.hide();
+		}
+		
+		$(".opa input, .opa a")
+			.on("focus", function(){
+				opa.addClass("opafocus");
+			}).on("blur", function(){
+				opa.removeClass("opafocus");
+			});
+		
+		__render();
+		
+		$selectors.buttonRegister.on("click", activateRegister);
+		
+		$selectors.del.on("click", submitDel);
+		
+		$selectors.chapterButton.on("click", getWordsFromChapters);
+		
+		$selectors.buttonAll.on("click", getAll);
+	})();
+
+
+
 	function parseWord(wordObj){
 		var parsed
 			,	word = wordObj.word;
@@ -169,32 +220,108 @@ $(function(){
 		delWord($selectors.word[0].value);
 	}
 	
-	function getChapters(str){
-		var chaps = chaptersPattern.exec(str || "0");
-		if(chaps == null){
-			return { from: "0" };
-		}else	if(chaps[3] != null){
-			return { from: chaps[3] };
-		}else{
-			chaps[1] = ~~chaps[1];
-			chaps[2] = ~~chaps[2];
-			return {
-				from: Math.min(chaps[1], chaps[2])
-			,	to: Math.max(chaps[1], chaps[2])
-			};
-		}
-	}
-	
-	function controlChapters(input){
-		var chaps = getChapters(input.value);
-			
-		if(chaps.to == null){
-			input.value = chaps.from;
-		}else{
-			input.value = chaps.from + " - " + chaps.to;
+	function catchChapters(str){
+		var chaps = []
+			,	group;
+
+		while(group = chaptersPattern.exec(str)){
+			if(group[3] != null){
+				group = [ ~~group[3] ];
+				group[1] = group[0];
+			}else{
+				group = [ ~~group[1], ~~group[2] ];
+				group = [
+					Math.min(group[0], group[1])
+				,	Math.max(group[0], group[1])
+				];
+			}
+
+			chaps.push(group);
 		}
 		
-		return chaps;
+		if(!chaps.length){
+			chaps.push([0, 0]);
+		}
+		
+		return minificateChapters(chaps);
+	}
+	
+	function minificateChapters(arr){
+		var i
+			,	j;
+		
+		arr = arr || [];
+		
+		if(arr.length){
+			arr = arr.sort(function(a, b){
+				if(a[0] === b[0]){
+					if(a.length === 2 && b.length === 2){
+						return a[1] - b[1];
+					}else{
+						return a.length - b.length;
+					}
+				}else{
+					return a[0] - b[0];
+				}
+			});
+
+			for(i = 0, j = 1; j < arr.length;){
+				if(arr[i][1] + 1 >= arr[j][0]){
+					arr[i] = [
+						Math.min(arr[i][0], arr[j][0])
+					,	Math.max(arr[i][1], arr[j][1])
+					];
+					arr.splice(j, 1);
+				}else{
+					i += 1;
+					j += 1;
+				}
+			}
+		}
+		
+		for(i = 0; i < arr.length; ++i){
+			if(arr[i][0] === arr[i][1]){
+				arr[i] = [arr[i][0]];
+			}
+		}
+
+		return arr;
+	}
+
+	function stringifyChapters(arr){
+		var str = []
+			,	i
+			,	len = arr.length;
+		
+		for(i = 0; i < len; ++i){
+			if(arr[i][0] === arr[i][1]){
+				str[i] = arr[i][0] + "";
+			}else{
+				str[i] = arr[i].join(" - ");
+			}
+		}
+		
+		return str.join(", ");
+	}
+
+	function getChapters(str, opts){
+		opts = opts || {};
+
+		opts.chapters = catchChapters(str || "0");
+
+		return opts;
+	}
+	
+	function controlChapters($input, opts){
+		opts = opts || {};
+
+		opts = getChapters($input.attr("value"), opts);
+
+		$input.attr("value", stringifyChapters(opts.chapters));
+		
+		opts.chapters = JSON.stringify(opts.chapters);
+
+		return opts;
 	}
 	
 	function getSearchOptions(opt){
@@ -203,13 +330,13 @@ $(function(){
 		opt = opt || {};
 		
 		optArr = [
-			{ value: $selectors.selImpo[0].value, prop: "important" }
-		,	{ value: $selectors.selLearnt[0].value, prop: "learnt" }
-		,	{ value: $selectors.selType[0].value, prop: "type" }
+			{ value: $selectors.selImpo.attr("value"), prop: "important" }
+		,	{ value: $selectors.selLearnt.attr("value"), prop: "learnt" }
+		,	{ value: $selectors.selType.attr("value"), prop: "type" }
 		];
 		
-		for(i = 0; i < optArr.length; ++i){console.log(optArr[i]);
-			if(optArr[i].value != "all"){console.log("yes");
+		for(i = 0; i < optArr.length; ++i){
+			if(optArr[i].value !== "all"){
 				opt[optArr[i].prop] = optArr[i].value;
 			}
 		}
@@ -218,15 +345,15 @@ $(function(){
 	}
 	
 	function getWordsFromChapters(){
-		var options = getSearchOptions(controlChapters($selectors.textChapter[0]));
+		var options = getSearchOptions(controlChapters($selectors.chapterText));
 		
 		$.get("/chapters", options, appendWords);
 	}
 	
 	function getAll(){
-		var options = getSearchOptions();
+		var options = getSearchOptions({ chapters: "all" });
 		
-		$.get("/all", options, appendWords);
+		$.get("/chapters", options, appendWords);
 	}
 
 	function submitLogin(){
@@ -484,45 +611,4 @@ $(function(){
 		$selectors.loginId.attr("value", "");
 		$selectors.loginPass.attr("value", "");
 	}	
-	
-	(function init(){
-		var i
-			,	user = $selectors.userInfo.text();
-		for(i = 0; i < fields.length; ++i){
-			$selectors[fields[i]] = $("#" + fields[i]);
-		}
-		
-		$selectors.selType
-			.children()
-			.slice(1)
-			.clone()
-			.appendTo($selectors.type);		
-		
-		overwriteSubmit($selectors.searchForm, submitSearch);
-		overwriteSubmit($selectors.editForm, submitEdit);
-		
-		if(user){
-			$selectors.loginWrapper.hide();
-			$selectors.registerWrapper.hide();
-			$selectors.userInfo.text("Welcome " + user + "!");
-			$selectors.buttonLogin.attr("value", "Log out");
-			overwriteSubmit($selectors.loginForm, submitLogout);
-			deleteUserClick(submitDeleteUser);
-		}else{
-			$selectors.userInfo.text("Log in");
-			overwriteSubmit($selectors.loginForm, submitLogin);
-			$selectors.buttonDelete.hide();
-			$selectors.studyWrapper.hide();
-		}
-		
-		__render();
-		
-		$selectors.buttonRegister.on("click", activateRegister);
-		
-		$selectors.del.on("click", submitDel);
-		
-		$selectors.buttonChapter.on("click", getWordsFromChapters);
-		
-		$selectors.buttonAll.on("click", getAll);
-	})();
 });
