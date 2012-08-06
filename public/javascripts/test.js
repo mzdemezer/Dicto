@@ -1,8 +1,8 @@
 $(function(){
-	var $selectors = {
+	var $s = {
 			chapterText: $("#chapterText")
 		,	chapterCheck: $("#chapterCheck")
-		,	chapterWrapper: $("#chapterLabel").add(chapterText)
+		,	chapterWrapper: $("#chapterLabel")
 		,	selLearnt: $("#selLearnt")
 		,	selImpo: $("#selImpo")
 		,	selType: $("#selType")
@@ -11,14 +11,17 @@ $(function(){
 	,	chapterAnimSpeed = 300,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/g;
 
 	(function init(){
-		$selectors.chapterWrapper.hide();
+		$(".floatLeft").removeClass("floatLeft");
+		$("#content").addClass("center");
 
-		$selectors.chapterCheck.on("change", function(){
+		$s.chapterWrapper = $s.chapterWrapper.add($s.chapterText).hide();
+
+		$s.chapterCheck.on("change", function(){
 			chapterWrapperDisp = !chapterWrapperDisp;
 			if(chapterWrapperDisp){
-				$selectors.chapterWrapper.show("blind", chapterAnimSpeed);
+				$s.chapterWrapper.show("blind", chapterAnimSpeed);
 			}else{
-				$selectors.chapterWrapper.hide("blind", chapterAnimSpeed);
+				$s.chapterWrapper.hide("blind", chapterAnimSpeed);
 			}
 		});
 		
@@ -36,17 +39,17 @@ $(function(){
 	
 	function getOptions(opts){		
 		var optArr = [
-			{ value: $selectors.selImpo.attr("value"), prop: "important" }
-		,	{ value: $selectors.selLearnt.attr("value"), prop: "learnt" }
-		,	{ value: $selectors.selType.attr("value"), prop: "type" }
+			{ value: $s.selImpo.attr("value"), prop: "important" }
+		,	{ value: $s.selLearnt.attr("value"), prop: "learnt" }
+		,	{ value: $s.selType.attr("value"), prop: "type" }
 		];
 		
 		opts = opts || {};
 
-		if($selectors.chapterCheck.attr("checked")){
+		if($s.chapterCheck.attr("checked")){
 			opts.chapters = "all";
 		}else{
-			opts = controlChapters($selectors.chapterText, opts);
+			opts = controlChapters($s.chapterText, opts);
 		}
 
 		for(i = 0; i < optArr.length; ++i){

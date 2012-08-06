@@ -8,7 +8,7 @@ $(function(){
 			,	"important"
 			,	"learnt"
 			]
-		,	$selectors = {
+		,	$s = {
 				content: $("#content")
 			,	textWord: $("#textWord")
 			,	def: $("#def")
@@ -39,33 +39,33 @@ $(function(){
 	
 	(function init(){
 		var i
-			,	user = $selectors.userInfo.text()
+			,	user = $s.userInfo.text()
 			,	opa = $(".opa");
 		for(i = 0; i < fields.length; ++i){
-			$selectors[fields[i]] = $("#" + fields[i]);
+			$s[fields[i]] = $("#" + fields[i]);
 		}
 		
-		$selectors.selType
+		$s.selType
 			.children()
 			.slice(1)
 			.clone()
-			.appendTo($selectors.type);		
+			.appendTo($s.type);		
 		
-		overwriteSubmit($selectors.searchForm, submitSearch);
-		overwriteSubmit($selectors.editForm, submitEdit);
+		overwriteSubmit($s.searchForm, submitSearch);
+		overwriteSubmit($s.editForm, submitEdit);
 		
 		if(user){
-			$selectors.loginWrapper.hide();
-			$selectors.registerWrapper.hide();
-			$selectors.userInfo.text("Welcome " + user + "!");
-			$selectors.buttonLogin.attr("value", "Log out");
-			overwriteSubmit($selectors.loginForm, submitLogout);
+			$s.loginWrapper.hide();
+			$s.registerWrapper.hide();
+			$s.userInfo.text("Welcome " + user + "!");
+			$s.buttonLogin.attr("value", "Log out");
+			overwriteSubmit($s.loginForm, submitLogout);
 			deleteUserClick(submitDeleteUser);
 		}else{
-			$selectors.userInfo.text("Log in");
-			overwriteSubmit($selectors.loginForm, submitLogin);
-			$selectors.buttonDelete.hide();
-			$selectors.studyWrapper.hide();
+			$s.userInfo.text("Log in");
+			overwriteSubmit($s.loginForm, submitLogin);
+			$s.buttonDelete.hide();
+			$s.studyWrapper.hide();
 		}
 		
 		$(".opa input, .opa a")
@@ -77,13 +77,13 @@ $(function(){
 		
 		__render();
 		
-		$selectors.buttonRegister.on("click", activateRegister);
+		$s.buttonRegister.on("click", activateRegister);
 		
-		$selectors.del.on("click", submitDel);
+		$s.del.on("click", submitDel);
 		
-		$selectors.chapterButton.on("click", getWordsFromChapters);
+		$s.chapterButton.on("click", getWordsFromChapters);
 		
-		$selectors.buttonAll.on("click", getAll);
+		$s.buttonAll.on("click", getAll);
 	})();
 
 
@@ -99,10 +99,10 @@ $(function(){
 			parsed = $("<em>");
 		}
 		
-		if(wordObj.learnt){
+		if(~~wordObj.learnt >= 20){
 			parsed.addClass("learnt");
 		}else{
-			parsed.addClass("notlearnt");
+			parsed.addClass("notLearnt");
 		}
 		
 		parsed = $("<a>")
@@ -115,35 +115,64 @@ $(function(){
 	}
 	
 	function fillForm(wordObj){
-		var i;
-		for(i = 0; i < fields.length; ++i){
-			switch($selectors[fields[i]][0].type){
-				case "checkbox":
-					$selectors[fields[i]][0].checked = !!(~~wordObj[fields[i]]);
+		var i
+			,	field
+			,	len = fields.length;
+		for(i = 0; i < len; ++i){
+			field = fields[i];
+			switch($s[field][0].tagName){
+				case "P":
+					$s[field].text(capitalize(field) + ": " + wordObj[field]);
 					break;
 				default:
-					$selectors[fields[i]][0].value = wordObj[fields[i]];
+					switch($s[field].attr("type")){
+						case "checkbox":
+							$s[field].attr("checked", !!(~~wordObj[field]));
+							break;
+						default:
+							$s[field].attr("value", wordObj[field]);
+					}
 			}
 		}
 	}
 	
 	function emptyForm(){
-		var i;
-		for(i = 0; i < fields.length; ++i){
-			$selectors[fields[i]][0].value = "";
+		var i
+			,	field
+			,	len = fields.length;
+		for(i = 0; i < len; ++i){
+			field = fields[i];
+			switch($s[field][0].tagName){
+				case "P":
+					$s[field].text("");
+					break;
+				default:
+					switch($s[field].attr("type")){
+						case "checkbox":
+							$s[field].attr("checked", false);
+							break;
+						default:
+							$s[field].attr("value", "");
+					}
+			}
 		}
 	}
 	
 	function formToWordObj(){
 		var wordObj = {}
-			,	i;
-		for(i = 0; i < fields.length; ++i){
-			switch($selectors[fields[i]][0].type){
+			,	i
+			,	field
+			,	len = fields.length;
+		for(i = 0; i < len; ++i){
+			field = fields[i];
+			switch($s[field].attr("type")){
 				case "checkbox":
-					wordObj[fields[i]] = ~~$selectors[fields[i]][0].checked;
+					wordObj[field] = ~~!!$s[field].attr("checked");
 					break;
 				default:
-					wordObj[fields[i]] = $selectors[fields[i]][0].value;
+					if(typeof $s[field].attr("value") === "string"){
+						wordObj[field] = $s[field].attr("value");
+					}
 			}
 		}
 		return wordObj;
@@ -155,7 +184,7 @@ $(function(){
 	}
 	
 	function getWR(word){
-		$selectors.WRiframe.attr("src", "http://www.wordreference.com/fren/" + word);
+		$s.WRiframe.attr("src", "http://www.wordreference.com/fren/" + word);
 	}
 	
 	function appendWords(data){
@@ -167,18 +196,18 @@ $(function(){
 			fillForm(data[0]);
 		}else if(len === 0){
 			emptyForm();
-			$selectors.def.empty();
+			$s.def.empty();
 		}else{
 			for(i = 0; i < len; ++i){
 				$("<li>").html(parseWord(data[i])).appendTo($list);
 			}
-			$selectors.def.empty();
-			$selectors.def.append($("<p>").text(len + " search results:")).append($list)
+			$s.def.empty();
+			$s.def.append($("<p>").text(len + " search results:")).append($list)
 		}
 	}
 	
 	function submitSearch(){
-		getWord($selectors.textWord[0].value);
+		getWord($s.textWord[0].value);
 	}
 	
 	function postWord(word){
@@ -187,7 +216,7 @@ $(function(){
 		,	url: "/edit"
 		,	data: word
 		,	success: function(data){
-				$selectors.info.text(data);
+				$s.info.text(data);
 			}
 		,	statusCode: {
 				401: tellToLogIn
@@ -208,7 +237,7 @@ $(function(){
 			type: "DELETE"
 		,	url: "/edit/" + word
 		,	success: function(data){
-				$selectors.info.text(data);
+				$s.info.text(data);
 			}
 		,	statusCode: {
 				401: tellToLogIn
@@ -217,7 +246,7 @@ $(function(){
 	}
 	
 	function submitDel(){
-		delWord($selectors.word[0].value);
+		delWord($s.word[0].value);
 	}
 	
 	function catchChapters(str){
@@ -330,9 +359,9 @@ $(function(){
 		opt = opt || {};
 		
 		optArr = [
-			{ value: $selectors.selImpo.attr("value"), prop: "important" }
-		,	{ value: $selectors.selLearnt.attr("value"), prop: "learnt" }
-		,	{ value: $selectors.selType.attr("value"), prop: "type" }
+			{ value: $s.selImpo.attr("value"), prop: "important" }
+		,	{ value: $s.selLearnt.attr("value"), prop: "learnt" }
+		,	{ value: $s.selType.attr("value"), prop: "type" }
 		];
 		
 		for(i = 0; i < optArr.length; ++i){
@@ -345,7 +374,7 @@ $(function(){
 	}
 	
 	function getWordsFromChapters(){
-		var options = getSearchOptions(controlChapters($selectors.chapterText));
+		var options = getSearchOptions(controlChapters($s.chapterText));
 		
 		$.get("/chapters", options, appendWords);
 	}
@@ -358,8 +387,8 @@ $(function(){
 
 	function submitLogin(){
 		var loginData = {
-			userId: $selectors.loginId[0].value
-		,	password: $selectors.loginPass[0].value
+			userId: $s.loginId[0].value
+		,	password: $s.loginPass[0].value
 		};
 		$.ajax({
 			type: "POST"
@@ -369,13 +398,13 @@ $(function(){
 				console.log(data);
 				
 				loginAnimation(loginData.userId);
-				overwriteSubmit($selectors.loginForm, submitLogout);
+				overwriteSubmit($s.loginForm, submitLogout);
 				deleteUserClick(submitDeleteUser);
 			}
 		,	statusCode: {
 				401: function(){
 					alert("Bad login or password");
-					$selectors.loginPass.attr("value", "");
+					$s.loginPass.attr("value", "");
 				}
 			,	500: function(){
 					alert("Internal server error!");
@@ -390,7 +419,7 @@ $(function(){
 		,	url: "/logout"
 		,	success: function(data){
 				logoutAnimation();
-				overwriteSubmit($selectors.loginForm, submitLogin);
+				overwriteSubmit($s.loginForm, submitLogin);
 			}
 		}).fail(function(msg){
 			alert("Error while logging out:\n" + msg);
@@ -399,8 +428,8 @@ $(function(){
 	
 	function submitNewUser(){
 		var newUserData = {
-			userId: $selectors.loginId[0].value
-		,	password: $selectors.loginPass[0].value
+			userId: $s.loginId[0].value
+		,	password: $s.loginPass[0].value
 		};
 		$.ajax({
 			type: "POST"
@@ -410,12 +439,12 @@ $(function(){
 				console.log(msg);
 				
 				newUserAnimation(newUserData.userId)
-				overwriteSubmit($selectors.loginForm, submitLogout);
+				overwriteSubmit($s.loginForm, submitLogout);
 				deleteUserClick(submitDeleteUser);
 			}
 		,	statusCode: {
 				409: function(){
-					$selectors.loginPass.attr("value", "");
+					$s.loginPass.attr("value", "");
 					alert("Choose different user name!");
 				}
 			}
@@ -431,22 +460,27 @@ $(function(){
 		,	success: function(msg){
 			console.log(msg);
 				logoutAnimation();
-				$selectors.loginId.attr("value", "");
-				overwriteSubmit($selectors.loginForm, submitLogin);
+				$s.loginId.attr("value", "");
+				overwriteSubmit($s.loginForm, submitLogin);
 			}
 		});
 	}
 	
+	function capitalize(str){
+		str[0] = str[0].toUpperCase;
+		return str;
+	}
+	
 	function cancel(){
 		cancelAnimation();
-		overwriteSubmit($selectors.loginForm, submitLogin);
+		overwriteSubmit($s.loginForm, submitLogin);
 	}
 	
 	function activateRegister(){
 		registerAnimation();
 		
 		deleteUserClick(cancel);
-		overwriteSubmit($selectors.loginForm, submitNewUser);
+		overwriteSubmit($s.loginForm, submitNewUser);
 	}
 	
 	function overwriteSubmit($form, func){
@@ -457,7 +491,7 @@ $(function(){
 	}
 	
 	function deleteUserClick(func){
-		$selectors.buttonDelete[0].onclick = func;
+		$s.buttonDelete[0].onclick = func;
 	}
 	
 	//animations
@@ -466,77 +500,77 @@ $(function(){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.registerWrapper.hide("blind", time);
+		$s.registerWrapper.hide("blind", time);
 	}
 	
 	function showRegisterWrapper(time){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.registerWrapper.show("blind", time);
+		$s.registerWrapper.show("blind", time);
 	}
 	
 	function hideStudyWrapper(time){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.studyWrapper.hide("blind", time);
+		$s.studyWrapper.hide("blind", time);
 	}
 	
 	function showStudyWrapper(time){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.studyWrapper.show("blind", time);
+		$s.studyWrapper.show("blind", time);
 	}
 	
 	function hideLoginWrapper(time){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.loginWrapper.hide("clip", time);
+		$s.loginWrapper.hide("clip", time);
 	}
 	
 	function showLoginWrapper(time){
 		if(time == null){
 			time = 1000;
 		}
-		$selectors.loginWrapper.show("clip", time);
+		$s.loginWrapper.show("clip", time);
 	}
 	
 	function shuffleUserInfo(newInfo, time, time2){
 		if(time == null){
 			time = 700;
 		}
-		$selectors.userInfo.hide("slide", { direction: "right"}, time, function(){
+		$s.userInfo.hide("slide", { direction: "right"}, time, function(){
 			if(time2 == null){
 				time2 = 600;
 			}
-			$selectors.userInfo.text(newInfo).show("slide", time2);
+			$s.userInfo.text(newInfo).show("slide", time2);
 		});
 	}
 	
 	function contentFadeOut(){
-		$selectors.content.fadeOut(500);
+		$s.content.fadeOut(500);
 	}
 	
 	function contentFadeIn(){
-		$selectors.content.fadeIn(500);
+		$s.content.fadeIn(500);
 	}
 	
 	function centralizeUserPanel(){
-		$selectors.userPanel.addClass("cl", 1000);
-		$selectors.loginForm.removeClass("opa");
+		$s.userPanel.addClass("cl", 1000);
+		$s.loginForm.removeClass("opa");
 	}
 	
 	function decentralizeUserPanel(){
-		$selectors.userPanel.removeClass("cl", 1000);
-		$selectors.loginForm.addClass("opa");
+		$s.userPanel.removeClass("cl", 1000);
+		$s.loginForm.addClass("opa");
 	}
 	
 	function shuffleLoginButton(newValue){
-		$selectors.buttonLogin.hide("blind", 700, function(){
-			$selectors.buttonLogin.attr("value", newValue).show("blind", 400);
+		$s.buttonLogin.hide("blind", 700, function(){
+			$s.buttonLogin.attr("value", newValue).show("blind", 400);
 		});
 	}
 	
@@ -546,14 +580,14 @@ $(function(){
 	}
 	
 	function hideDeleteButton(callback){
-		$selectors.buttonDelete.hide("blind", 700, callback);
+		$s.buttonDelete.hide("blind", 700, callback);
 	}
 	
 	function showDeleteButton(newValue, time){
 		if(newValue != null){
-			$selectors.buttonDelete.attr("value", newValue).show("blind", time || 400);
+			$s.buttonDelete.attr("value", newValue).show("blind", time || 400);
 		}else{
-			$selectors.buttonDelete.show("blind", 1100);
+			$s.buttonDelete.show("blind", 1100);
 		}
 	}
 	
@@ -564,7 +598,7 @@ $(function(){
 		shuffleLoginButton("Log out");
 		showDeleteButton("Delete user", 1100);
 		showStudyWrapper();
-		$selectors.loginPass.attr("value", "");
+		$s.loginPass.attr("value", "");
 	}
 	
 	function logoutAnimation(time){
@@ -583,8 +617,8 @@ $(function(){
 		shuffleUserInfo("Register now!");
 		shuffleLoginButton("Register");
 		showDeleteButton("Cancel", 1100);
-		$selectors.loginId.attr("value", "");
-		$selectors.loginPass.attr("value", "");		
+		$s.loginId.attr("value", "");
+		$s.loginPass.attr("value", "");		
 	}
 	
 	function newUserAnimation(userId){
@@ -594,7 +628,7 @@ $(function(){
 		shuffleUserInfo("Welcome " + userId + "!");
 		shuffleLoginButton("Log out");
 		shuffleDeleteButton("Delete user");
-		$selectors.loginPass.attr("value", "");
+		$s.loginPass.attr("value", "");
 	}
 	
 	function decentralizeAnimation(){
@@ -608,7 +642,7 @@ $(function(){
 		shuffleLoginButton("Log in");
 		hideDeleteButton();
 		showRegisterWrapper();
-		$selectors.loginId.attr("value", "");
-		$selectors.loginPass.attr("value", "");
+		$s.loginId.attr("value", "");
+		$s.loginPass.attr("value", "");
 	}	
 });

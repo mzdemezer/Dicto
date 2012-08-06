@@ -54,7 +54,7 @@ input, select, textarea {
 	color: #fc0;
 }
 
-fieldset, input, textarea, .divStd, select, .stdAnc {
+fieldset, input, textarea, .divStd, select, .stdAnc, table, th, td {
 	border-radius: 5px;
 	border-top: 1px solid #996;
 	border-left: 1px solid #996;
@@ -69,9 +69,19 @@ input, select, textarea, a {
 	-o-transition: all .1s ease-in-out;
 }
 
-input:hover, select:hover, textarea:hover, .stdAnc:hover {
+input:hover, select:hover, textarea:hover, .stdAnc:hover, thead {
 	color: #000;
 	background-color: #996;
+}
+
+.even {
+	background-color: #000;
+	color: #f60;
+}
+
+.odd {
+	background-color: #292912;
+	color: #fc0;
 }
 
 .searchRes {
@@ -86,7 +96,7 @@ h2 {
 	margin: 0.2em;
 }
 
-.notlearnt {
+.notLearnt {
 	color: #f00;
 }
 
@@ -104,10 +114,30 @@ p, h4, .info {
 	text-align: center;
 }
 
-#buttonRegister {
+.centerOut {
+	width: 100%;
+	text-align: center;
+}
+
+.centerIn {
+	display: inline-block;
+}
+
+.center {
 	margin-left: auto;
 	margin-right: auto;
-	display: block;
+
+	display: -moz-box;
+	-moz-box-orient: horizontal;
+	-moz-box-pack: center;
+
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-pack: center;
+
+	display: box;
+	box-orient: horizontal;
+	box-pack: center;
 }
 
 .textStd {
@@ -173,4 +203,37 @@ p, h4, .info {
 
 .foundWord:hover {
 	color: #0f0;
+}
+
+input.quiz {
+	transition: color 1s ease-in-out;
+	-moz-transition: color 1s ease-in-out;
+	-webkit-transition: color 1s ease-in-out;
+	-o-transition: color 1s ease-in-out;
+}
+
+input.succ {
+	border: none;
+	color: #0f0;
+}
+
+input.fail {
+	border: none;
+	color: #f00;
+}
+
+.bigText, table, th {
+	font-size: 1.5em;
+}
+
+table, td, th {
+	padding-left: 0.3em;
+	padding-right: 0.3em;
+	padding-top: 0.1em;
+	padding-bottom: 0.1em;
+	margin: 0.1em;
+}
+
+h1 {
+	font-size: 2.5em;
 }

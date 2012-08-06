@@ -6,7 +6,33 @@ append scripts
 		var words = !{words};
 
 block content
-	#content
-		h1 Test
-		a.stdAnc(href="/") Home
-		a.stdAnc(href="/test") Back
+	h1.center Fill in the blanks
+	#navigation.center
+		.center.divStd	
+			a.stdAnc(href="/") Home
+			a.stdAnc(href="/test") Back
+	#content.center
+		form.center#fillForm
+			#menu
+				label(for="numberRounds").bigText#numberLabel Rounds: 
+				input(type="number", value="3", min="1")#numberRounds
+				input(type="button", value="Begin")#beginButton
+				input(type="button", value="End", style="display:none")#endButton
+			#quiz(style="display:none")
+				.center
+					input(type="text").center.block.bigText.centerOut#checkText
+				#controlPanel
+					h2(style="display:none").center.learnt#correct
+					p.center.bigText#def
+					.center
+						input(type="submit", value="Check")#checkButton
+						input(type="button", value="Next")#nextButton
+		.center
+			table(style="display:none")#stats
+				thead
+					tr
+						th Word
+						th Hits
+						th Overall
+				tbody#results
+				tfoot#footer

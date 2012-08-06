@@ -8,7 +8,7 @@ prepend content
 				#registerWrapper.divStd
 					p.textStd You don't have an account?
 					h4.textStd Register now!
-					input(type="button", value="Register")#buttonRegister
+					input(type="button", value="Register").center.block#buttonRegister
 				h2#userInfo.info #{userId}
 				#loginWrapper
 					.block
@@ -54,9 +54,7 @@ block modify
 				.block
 					input(type="checkbox")#important
 					label(for="important") Important
-				.block
-					input(type="checkbox")#learnt
-					label(for="learnt") Learnt
+				p#learnt
 			fieldset
 				input(type="submit", value="Save")#save
 				input(type="button", value="Delete")#del

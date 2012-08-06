@@ -123,7 +123,7 @@ app.del("/deleteUser", requireLogged(function(req, res, next){
 		if(err){
 			res.send(500)
 		}else{
-			res.send(200);
+			res.send(204);
 		}
 	});
 });
@@ -178,11 +178,12 @@ app.post("/edit", requireLogged(function(req, res, next){
 		if(err){
 			next(err, req, res);
 		}else{
+			req.body.learnt = 0;
 			database.query(query.insert(req.body), function(err, rows, fields){
 				if(err){
 					next(err, req, res);
 				}else{
-					res.send("Edited: " + req.body.word);
+					res.send("Edited: " + req.body.word, 200);
 				}
 			});
 		}
@@ -196,7 +197,7 @@ app.del("/edit/:word", requireLogged(function(req, res, next){
 		if(err){
 			next(err, req, res);
 		}else{
-			res.send("Deleted: " + req.word);
+			res.send("Deleted: " + req.word, 200);
 		}
 	});
 });
@@ -219,7 +220,7 @@ app.get("/test", requireLogged(), function(req, res, next){
 	var opts;
 
 	opts = {
-		userId: req.cookies["logged-user-id"].userId
+		userId: 0//req.cookies["logged-user-id"].userId
 	, otherFiles: reqFileParams("test")
 	};
 
@@ -237,6 +238,16 @@ app.get(urlParams.register("/test/fill"), urlParams("/test/fill"), requireLogged
 		};
 
 		res.render("fill", opts);
+	});
+});
+
+app.post("/test/update", requireLogged(), function(req, res, next){
+	database.query(query.learn(req.body.words), function(err, rows, fields){
+		if(err){console.log("err: " + err);
+			next()
+		}else{
+			res.send(204);
+		}
 	});
 });
 
@@ -260,6 +271,7 @@ function requireLogged(errHandler){
 		}
 	}
 }
+
 function errorHandler(err, req, res, next){
 	var query;
 	if(err.code === "ER_NO_SUCH_TABLE"){
