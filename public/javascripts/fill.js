@@ -31,7 +31,18 @@ $(function(){
 		,	footer: $("#footer")
 		}
 		,	overwriteSubmit;
-	
+	if(!wordBank.length){
+		$("#content")
+			.empty()
+			.append($("<h1>")
+				.text("No words here, Einstein!")
+				.addClass("bigText center")
+			);
+		__render();
+
+		return;
+	}
+
 	(function initSelectors(){
 		var i
 			,	len = allFocusFields.length
@@ -97,8 +108,29 @@ $(function(){
 	})();
 	
 	(function init(){
-		words = undefined;
+		var	focusText;
 
+		words = undefined;
+		
+		$s.checkText.add($s.numberRounds)
+			.on("focus", function(){
+				focusText = true;
+			})
+			.on("blur", function(){
+				focusText = false;
+			});
+		
+		document.onkeydown = function(e){
+			if(!focusText){
+				switch(e.keyCode){
+					case 8://backspace
+						e.preventDefault();
+						return false;
+				}
+			}
+			return e;
+		};
+		
 		$s.nextButton.on("click", function(){
 			next();
 		});
@@ -200,7 +232,14 @@ $(function(){
 	}
 	
 	function checkWord(word){
-		return $s.checkText.attr("value") === word.word;
+		return RegExp("^\\s*" + word.word
+			.replace(/!/g, "\\s*!?\\s*")
+			.replace(/[.]/g, "\\s*[.]?\\s*")
+			.replace(/,/g, "\\s*,?\\s*")
+			.replace(/ /g, "\\s+")
+			.replace(/\s*-\s*/g, "\\s*-\\s*")
+			.replace(/(^\s*)|(\s*$)/g, "")
+			+ "\\s*$", "i").exec($s.checkText.val());
 	}
 	
 	function newRound(){
@@ -221,11 +260,13 @@ $(function(){
 	function endRound(){
 		if(rounds < maxRounds){
 			overwriteBegin(startNewRound);
+			$s.beginButton.attr("value", "Next round");
 			overwriteSubmit($s.fillForm, startNewRound);
 			showEndButton();
 			hideNumber();
 		}else{
 			overwriteBegin(restartQuiz);
+			$s.beginButton.attr("value", "Begin");
 			overwriteSubmit($s.fillForm, restartQuiz);
 			showNumber();
 			hideEndButton();
@@ -238,6 +279,7 @@ $(function(){
 	
 	function stopQuiz(){
 		overwriteBegin(restartQuiz);
+		$s.beginButton.attr("value", "Begin");
 		overwriteSubmit($s.fillForm, restartQuiz);
 		showNumber();
 		hideEndButton();
@@ -275,9 +317,12 @@ $(function(){
 			,	len
 			,	$cell
 			,	$row
+			,	$word
 			,	$res = $s.results
 			,	$footer = $s.footer
-			,	classer = false;
+			,	classer = false
+			,	learntClass
+			,	func;
 		
 		$res.detach()
 			.empty();		
@@ -302,27 +347,63 @@ $(function(){
 				$cell.addClass("notLearnt");
 			}
 			
-			$cell = $("<td>").text(wordBank[i].word);
-			$row.prepend($cell);
 			if(wordBank[i].hitThisRound){
-				$cell.addClass("learnt");
+				learntClass = "learnt";
 			}else{
-				$cell.addClass("notLearnt");
+				learntClass = "notLearnt";
 			}
+			
+			
+			
+			$word = $("<p>")
+				.addClass("hidden explText")
+				.html(parseNewLines(wordBank[i].explanation));
+			func = togExplWrapper($word);
+			
+			$cell = $("<td>")
+				.on("click", func)
+				.append($("<a>")
+					.attr("href", "#")
+					.addClass([learntClass, "statsWord"].join(" "))
+					.text(wordBank[i].word)
+					.append($word));
+			$row.prepend($cell);
 			
 			$row.appendTo($res);
 		}
 		
 		$footer.detach()
 			.empty()
-			.append($("<td>"))
-			.append($("<td>").text("/" + rounds));
+			.append($("<td>").text(len + " word" + (len === 1 ? "" : "s")))
+			.append($("<td>").text("/" + rounds))
+			.append($("<td>").text(((wordBank.reduce(function(sum, elem){
+					return sum + ~~elem.learnt;
+				}, 0) / len) / 20 * 100).toPrecision(3) + "%"));
 		
 		$s.stats.append($res).append($footer);
 
-		showStats();
+		showStats(len);
 	}
 	
+	function togExplWrapper($expl){console.log($expl);
+		return function(e){
+			if(e.preventPropagation){
+				e.preventPropagation();
+			}
+			if(e.preventDefault){
+				e.preventDefault();
+			}
+			
+			toggleExplanation($expl);
+			
+			return false;
+		}
+	}
+
+	function toggleExplanation($expl){			
+		$expl.toggle(500);
+	}
+
 	function tellToLogIn(){
 		alert("You have to be logged in to change content");
 	}
@@ -363,11 +444,24 @@ $(function(){
 			curr.hitThisRound = false;
 			failAnim();
 		}
+		$s.checkText.val(enhanceWord(curr, $s.checkText.val()));
+		disableCheckText();
 		hideCheckButton()
 
 		done = true;
 		
 		callCallBack(callback);
+	}
+	
+	function enhanceWord(word, typed){
+		typed = typed || word.word;
+		switch(word.type){
+			case "nm": return "un " + typed;
+			case "nf": return "une " + typed;
+			case "npl": return "des " + typed;
+			case "nmf": return "un/une " + typed;
+			default: return typed;
+		}
 	}
 	
 	function startQuiz(callback){
@@ -407,12 +501,10 @@ $(function(){
 	
 	function succeedAnim(){
 		$s.checkText.addClass("succ");
-		disableCheckText();
 	}
 	
 	function failAnim(){
 		$s.checkText.addClass("fail");
-		disableCheckText();
 		showCorrect(curr);
 	}
 	
@@ -446,7 +538,7 @@ $(function(){
 	
 	function showCorrect(word, callback){
 		var cor = $s.correct;
-		cor.text(word.word);
+		cor.text(enhanceWord(word));
 		cor.show("blind", 175, callback);
 	}
 	
@@ -500,9 +592,9 @@ $(function(){
 		}
 	}
 	
-	function showStats(callback){
+	function showStats(len, callback){
 		if($s.stats.css("display") === "none"){
-			$s.stats.show("blind", 1000, callback);
+			$s.stats.show("blind", 1000 + len * 20, callback);
 		}
 	}
 	

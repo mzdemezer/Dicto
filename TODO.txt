@@ -1,0 +1,20 @@
+﻿! Uważać na zdarzenia domyślne (jak nieszczęsny backspace, gdy żaden element nie jest na celowniku, który to klawisz cofa stronę)
+- Wszędzie tam gdzie się wpisuje dodać pasek z literami, których nie da się wstukać i IPĄ
+- Znaleźć źródło list słówek w necie
+- Sprawić, żeby node mi ściągał z word reference! :[
+
+Test
+
+- przy cofaniu checkbox musi pasować do chaptersText
+- submit e.preventDefault
+- liczba słów przy selekcji
+!?listy słów - zapisywane selektorem - wystarczy łańcuch JSONa z adresu
+
+Fill
+
+- zlikwidować licznik rund, niepotrzebny jest
+- przy statystykach to co się wpisało i diff co było źle
+- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation)
+!?pokazywanie części mowy
+!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt
+POTRZEBNY DIFF! Jak to zrobić... najdłuższy wspólny podciąg?

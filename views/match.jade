@@ -1,0 +1,42 @@
+
+extends tests
+
+block content
+	section.content
+		h1.center Match
+		nav#navigation.bigText.center
+			.center.divStd	
+				a.stdAnc(href="/") Home
+				a.stdAnc(href="/test") Back
+		#content.centerOut
+			form.center.bigText#fillForm
+				#menu
+					input(type="button", value="Begin")#beginButton
+					input(type="button", value="End", style="display:none;")#endButton
+			#quiz.content.center
+				section
+					header
+						p Match terms and definitions
+					article.bigText
+						ul#terms.quiz.quizleft
+							li.drag
+							li.drag
+							li.drag
+							li.drag
+						ul#defs.quiz.quizright
+							li.drag
+							li.drag
+							li.drag
+							li.drag
+			#controlPanel.center
+				input(type="button", value="Check")#checkButton
+				input(type="button", value="Next")#nextButton
+			.center
+				table(style="display:none;")#stats
+					thead
+						tr
+							th Word
+							th Hits
+							th Overall
+					tbody#results
+					tfoot#footer

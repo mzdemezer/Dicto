@@ -1,34 +1,30 @@
 
-extends layout
-
-append scripts
-	script(type="text/javascript")
-		var words = !{words};
+extends tests
 
 block content
 	h1.center Fill in the blanks
-	#navigation.center
+	#navigation.bigText.center
 		.center.divStd	
 			a.stdAnc(href="/") Home
 			a.stdAnc(href="/test") Back
-	#content.center
-		form.center#fillForm
+	#content
+		form.center.bigText#fillForm
 			#menu
-				label(for="numberRounds").bigText#numberLabel Rounds: 
+				label(for="numberRounds")#numberLabel Rounds: 
 				input(type="number", value="3", min="1")#numberRounds
 				input(type="button", value="Begin")#beginButton
-				input(type="button", value="End", style="display:none")#endButton
-			#quiz(style="display:none")
+				input(type="button", value="End", style="display:none;")#endButton
+			#quiz(style="display:none;")
 				.center
-					input(type="text").center.block.bigText.centerOut#checkText
+					input(type="text").center.block.centerOut#checkText
 				#controlPanel
-					h2(style="display:none").center.learnt#correct
-					p.center.bigText#def
+					h2(style="display:none;").center.learnt#correct
+					p.center#def
 					.center
 						input(type="submit", value="Check")#checkButton
 						input(type="button", value="Next")#nextButton
 		.center
-			table(style="display:none")#stats
+			table(style="display:none;")#stats
 				thead
 					tr
 						th Word

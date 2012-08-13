@@ -9,7 +9,7 @@ var http = require("http")
 	,	query = require("queries")
 	,	jsonicate = require("fileJSONicator")
 	,	files
-	,	urlParams = require("urlParams")
+	,	urlParams = require("urlParams")(app)
 	,	reqFileParams = require("reqFileParams");
 
 app.configure(function(){
@@ -36,6 +36,22 @@ app.param("word", function(req, res, next, word){
 	req.word = word.toLowerCase();
 	next();
 });
+
+app.param("test", (function(){
+	var	tests = [
+				"fill"
+			,	"match"
+			];
+
+	return function(req, res, next, testName){
+		if(isIn(testName, tests)){
+			req.testName = testName;	
+			next();
+		}else{
+			throw new Error("No such test as " + testName + " is implemented.");
+		}
+	}
+})());
 
 app.get("/", function(req, res, next){
 	var opts = {
@@ -226,18 +242,18 @@ app.get("/test", requireLogged(), function(req, res, next){
 
 	res.render("test", opts);
 });
-
-app.get(urlParams.register("/test/fill"), urlParams("/test/fill"), requireLogged(), function(req, res, next){
+ 
+app.get(urlParams.register("/test/:test"), urlParams("/test/:test"), requireLogged(), function(req, res, next){
 	var opts;
 
 	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
 		opts = {
-			userId: req.cookies["logged-user-id"].userId
-		, otherFiles: reqFileParams("fill")
+			userId: 0//req.cookies["logged-user-id"].userId
+		, otherFiles: reqFileParams(req.testName)
 		,	words: JSON.stringify(rows)
 		};
 
-		res.render("fill", opts);
+		res.render(req.testName, opts);
 	});
 });
 
@@ -264,6 +280,7 @@ function requireLogged(errHandler){
 	}
 
 	return function(req, res, next){
+		// next();
 		if(req.logged){
 			next();
 		}else{
@@ -305,6 +322,7 @@ function errorHandler(err, req, res, next){
 		,	learn: jsonicate([ "/public/javascripts/learn.js" ], __dirname)
 		,	test: jsonicate([ "/public/javascripts/test.js" ], __dirname)
 		,	fill: jsonicate([ "/public/javascripts/fill.js" ], __dirname)
+		,	match: jsonicate([ "/public/javascripts/match.js" ], __dirname)
 		};
 
 		app.listen(app.get("port"), function(){
@@ -432,11 +450,11 @@ function uniqueComp(a, b){
 
 function unique(arr){
 	var a = []
-		,	l = arr.length
+		,	len = arr.length
 		,	i
-		,	j
-		,	f;
-	for(i = 0; i < l; ++i) {
+		,	j;
+
+	for(i = 0; i < len; ++i) {
 		for(j = 0; j < a.length; ++j) {
 			if(uniqueComp(arr[i], a[j])){
 				i += 1;
@@ -447,3 +465,15 @@ function unique(arr){
 	}
 	return a;
 };
+
+function isIn(elem, arr){
+	var i
+		,	len;
+
+	for(i = 0, len = arr.length; i < len; ++i){
+		if(uniqueComp(elem, arr[i])){
+			return true;
+		}
+	}
+	return null;
+}
