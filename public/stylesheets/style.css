@@ -266,6 +266,15 @@ ul.quiz {
 	cursor: move;
 }
 
+a.help {
+	color: #f60;
+	margin: 0.3em;
+}
+
+a.help:hover {
+	color: #ff0;
+}
+
 .drag {
 	margin-top: 0.6em;
 	margin-bottom: 0.6em;

@@ -6,6 +6,7 @@ $(function(){
 		,	selLearnt: $("#selLearnt")
 		,	selImpo: $("#selImpo")
 		,	selType: $("#selType")
+		,	wordNumber: $("#wordNumber")
 		}
 	,	chapterWrapperDisp = false
 	,	chapterAnimSpeed = 300,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/g;
@@ -16,14 +17,16 @@ $(function(){
 
 		$s.chapterWrapper = $s.chapterWrapper.add($s.chapterText).hide();
 
-		$s.chapterCheck.on("change", function(){
-			chapterWrapperDisp = !chapterWrapperDisp;
-			if(chapterWrapperDisp){
-				$s.chapterWrapper.show("blind", chapterAnimSpeed);
-			}else{
-				$s.chapterWrapper.hide("blind", chapterAnimSpeed);
-			}
-		});
+		$s.chapterCheck
+			.on("change", function(){
+				chapterWrapperDisp = !chapterWrapperDisp;
+				if(chapterWrapperDisp){
+					$s.chapterWrapper.show("blind", chapterAnimSpeed);
+				}else{
+					$s.chapterWrapper.hide("blind", chapterAnimSpeed);
+				}
+			})
+			.attr("checked", true);
 		
 		$(".testAnc").each(function(){
 			var $this = $(this)
@@ -34,8 +37,23 @@ $(function(){
 			});
 		});
 		
+		$("form")
+			.on("change", getCount)
+			.submit(function(e){
+				e.preventDefault();
+				return false;
+			});
+		
+		getCount();
+		
 		__render();
 	})();
+	
+	function getCount(){
+		$.get("/count" + getOptions(), function(data){
+			$s.wordNumber.text(data[0].words);
+		});
+	}
 	
 	function getOptions(opts){		
 		var optArr = [

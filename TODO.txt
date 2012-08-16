@@ -2,19 +2,22 @@
 - Wszędzie tam gdzie się wpisuje dodać pasek z literami, których nie da się wstukać i IPĄ
 - Znaleźć źródło list słówek w necie
 - Sprawić, żeby node mi ściągał z word reference! :[
+- Zrobić wersję dla wielu użytkowników
 
 Test
 
-- przy cofaniu checkbox musi pasować do chaptersText
-- submit e.preventDefault
-- liczba słów przy selekcji
 !?listy słów - zapisywane selektorem - wystarczy łańcuch JSONa z adresu
 
 Fill
 
+- jeżeli w określeniu jest =, to przy sprawdzaniu powinien rozbijać na człony i sprawdzać każdy z osobna
 - zlikwidować licznik rund, niepotrzebny jest
 - przy statystykach to co się wpisało i diff co było źle
-- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation)
+- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation) (do ustawiania limit na wpisywanie)
 !?pokazywanie części mowy
-!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt
-POTRZEBNY DIFF! Jak to zrobić... najdłuższy wspólny podciąg?
+!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt; potrzebny jest tu algorytm do porównywania tekstów; ciekawym dodatkiem byłby algorytm do rozpoznawania wymowy słowa i porównywania jej z orginałem - tu można by jakoś rozpoznać jaki to jest błąd, albo przynajmniej ulepszyć rozpoznawanie pomyłki
+	Ten alogrytm to byłby na największy wspólny niekoniecznie spójny podciąg i do tego z zaznaczeniem miejsc gdzie opuścił coś. Do dalszego przemyślenia
+	
+Match
+
+- Get it to work already!

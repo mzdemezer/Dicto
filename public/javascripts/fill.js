@@ -1,4 +1,4 @@
-$(function(){
+﻿$(function(){
 	var wordBank = words
 		,	rounds = 1
 		,	maxRounds
@@ -22,6 +22,7 @@ $(function(){
 			,	"checkButton"
 			,	"nextButton"
 			,	"endButton"
+			,	"letterPanel"
 			]
 		,	$s = {
 			allFocus: $()
@@ -108,7 +109,26 @@ $(function(){
 	})();
 	
 	(function init(){
-		var	focusText;
+		var	focusText
+			,	i
+			,	len
+			,	$letters = $("<p>")
+			,	letters = [
+					"à"
+				,	"â"
+				,	"ä"
+				,	"ç"
+				,	"é"
+				,	"è"
+				,	"ê"
+				,	"ë"
+				,	"î"
+				,	"ï"
+				,	"ô"
+				,	"ù"
+				,	"û"
+				,	"ü"
+				];
 
 		words = undefined;
 		
@@ -119,6 +139,29 @@ $(function(){
 			.on("blur", function(){
 				focusText = false;
 			});
+		
+		for(i = 0, len = letters.length; i < len; ++i){
+			$letters.append($("<a>")
+				.attr("href", "#")
+				.addClass("help")
+				.text(letters[i])
+				.on("click", letterHandler)
+			);
+		}
+		
+		function letterHandler(e){
+			e.preventDefault();
+			
+			if(!done){
+				$s.checkText
+					.val($s.checkText.val() + $(this).text())
+					.focus();
+			}
+			
+			return false;
+		}
+		
+		$s.letterPanel.append($letters);
 		
 		document.onkeydown = function(e){
 			if(!focusText){
@@ -360,10 +403,10 @@ $(function(){
 				.html(parseNewLines(wordBank[i].explanation));
 			func = togExplWrapper($word);
 			
-			$cell = $("<td>")
+			$cell = $("<a>")
+				.attr("href", "#")
 				.on("click", func)
-				.append($("<a>")
-					.attr("href", "#")
+				.append($("<td>")
 					.addClass([learntClass, "statsWord"].join(" "))
 					.text(wordBank[i].word)
 					.append($word));
@@ -411,7 +454,9 @@ $(function(){
 	function next(callback){
 		if(curr){
 			if(!done){
-				curr.learnt -= 1;
+				if(curr.learnt > 0){
+					curr.learnt -= 1;
+				}
 				curr.hits = curr.hits || 0;
 				curr.hitThisRound = false;
 			}else{
@@ -439,7 +484,9 @@ $(function(){
 			curr.hitThisRound = true;
 			succeedAnim();
 		}else{
-			curr.learnt -= 1;
+			if(curr.learnt > 0){
+				curr.learnt -= 1;
+			}
 			curr.hits = curr.hits || 0;
 			curr.hitThisRound = false;
 			failAnim();
@@ -524,7 +571,7 @@ $(function(){
 	}
 	
 	function enableCheckText(callback){
-		$s.checkText.attr("disabled", false);
+		$s.checkText.attr("disabled", false).focus();
 		
 		callCallBack(callback);
 	}

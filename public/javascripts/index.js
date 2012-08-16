@@ -86,7 +86,38 @@ $(function(){
 		$s.buttonAll.on("click", getAll);
 	})();
 
-
+	
+	/**
+		After alert the array is ready!
+		*/
+	function getUnknownWordsFromText(text){
+		var wordBank = {}
+			,	i
+			,	len
+			,	unknown = [];
+		text = text
+			.toLowerCase()
+			.replace(/[.,;?!]/g, " ")
+			.replace(/\s+/g, " ")
+			.split(" ");
+		$.get("/chapters?chapters=all", function(data){
+			for(i = 0, len = data.length; i < len; ++i){
+				wordBank[data[i]] = i;
+			}
+			
+			for(i = 0, len = text.length; i < len; ++i){
+				if(wordBank[text[i]] == null){
+					unknown.push(text[i]);
+				}
+			}
+			
+			alert("finished");
+		});
+		
+		return unknown;
+	}
+	
+	
 
 	function parseWord(wordObj){
 		var parsed

@@ -171,7 +171,7 @@ app.get("/search/:word", function(req, res, next){
 					}
 				});
 			}else{
-				res.json(rows);
+				res.json(rows[0]);
 			}
 		}
 	});
@@ -179,6 +179,16 @@ app.get("/search/:word", function(req, res, next){
 
 app.get(urlParams.register("/chapters"), urlParams("/chapters"), function(req, res, next){
 	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
+		if(err){
+			next(err, req, res);
+		}else{
+			res.json(rows);
+		}
+	});
+});
+
+app.get(urlParams.register("/count"), urlParams("/count"), function(req, res, next){
+	database.query(query.count(req.body.urlParams), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
@@ -280,12 +290,12 @@ function requireLogged(errHandler){
 	}
 
 	return function(req, res, next){
-		// next();
-		if(req.logged){
-			next();
-		}else{
-			errHandler(req, res, next);
-		}
+		next();
+		// if(req.logged){
+			// next();
+		// }else{
+			// errHandler(req, res, next);
+		// }
 	}
 }
 
