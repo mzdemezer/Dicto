@@ -1,23 +1,40 @@
-﻿! Uważać na zdarzenia domyślne (jak nieszczęsny backspace, gdy żaden element nie jest na celowniku, który to klawisz cofa stronę)
-- Wszędzie tam gdzie się wpisuje dodać pasek z literami, których nie da się wstukać i IPĄ
-- Znaleźć źródło list słówek w necie
+﻿- Znaleźć źródło list słówek w necie
 - Sprawić, żeby node mi ściągał z word reference! :[
-- Zrobić wersję dla wielu użytkowników
+- Zrobić wersję dla wielu użytkowników (każdy może mieć wiele baz i je współdzielić, dodać listę baz użytkownika do wyszukiwania; ustawienia użytkownika: ustawienia bazy słówek - język, urle słowników; język interfejsu)
 
-Test
+Server side
+	-	Query module containing:
+		- Create query module
+		- Mysql binding
+		- pool
+		in shape of a Mulitiple Query function:
+			mysql([array of queries], function callback(err, resp = [
+				{ rows: [...], fields: [...] }
+			,	{ rows: [...], fields: [...] }
+			,	{ rows: [...], fields: [...] }
+			]){ ... }),
+		where a query is either complete query typeof string
+		or object { type: "string", arguments: something }
+			Error would terminate sequential execution with so-far resp and error object; and call callback function
+	- Zwinąć dzięki takiemu modułowi ładnie init, ze wszystkimi zapytaniami początkowymi
 
-!?listy słów - zapisywane selektorem - wystarczy łańcuch JSONa z adresu
+Client Side
+	! Uważać na zdarzenia domyślne (jak nieszczęsny backspace, gdy żaden element nie jest na celowniku, który to klawisz cofa stronę)
 
-Fill
+	Index
+		- wyświetlanie wyników wyszukiwania co np. 500 słów
 
-- jeżeli w określeniu jest =, to przy sprawdzaniu powinien rozbijać na człony i sprawdzać każdy z osobna
-- zlikwidować licznik rund, niepotrzebny jest
-- przy statystykach to co się wpisało i diff co było źle
-- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation) (do ustawiania limit na wpisywanie)
-!?pokazywanie części mowy
-!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt; potrzebny jest tu algorytm do porównywania tekstów; ciekawym dodatkiem byłby algorytm do rozpoznawania wymowy słowa i porównywania jej z orginałem - tu można by jakoś rozpoznać jaki to jest błąd, albo przynajmniej ulepszyć rozpoznawanie pomyłki
-	Ten alogrytm to byłby na największy wspólny niekoniecznie spójny podciąg i do tego z zaznaczeniem miejsc gdzie opuścił coś. Do dalszego przemyślenia
-	
-Match
+	Test
+		!?listy słów - zapisywane selektorem - wystarczy łańcuch JSONa z adresu
 
-- Get it to work already!
+	Fill
+		- jeżeli w określeniu jest =, to przy sprawdzaniu powinien rozbijać na człony i sprawdzać każdy z osobna
+		- zlikwidować licznik rund, niepotrzebny jest
+		- przy statystykach to co się wpisało i diff co było źle
+		- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation) (do ustawiania limit na wpisywanie)
+		!?pokazywanie części mowy
+		!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt; potrzebny jest tu algorytm do porównywania tekstów; ciekawym dodatkiem byłby algorytm do rozpoznawania wymowy słowa i porównywania jej z orginałem - tu można by jakoś rozpoznać jaki to jest błąd, albo przynajmniej ulepszyć rozpoznawanie pomyłki
+			Ten alogrytm to byłby na największy wspólny niekoniecznie spójny podciąg i do tego z zaznaczeniem miejsc gdzie opuścił coś. Do dalszego przemyślenia
+		
+	Match
+		- Get it to work already!

@@ -321,7 +321,8 @@ $(function(){
 	
 	function startQuiz(){
 		shuff = initShuffle(wordBank.length);
-		overwriteSubmit(check);
+		$s.quiz.show("fold", matchSpeed);
+		next();
 	}
 	
 	function check(){
@@ -335,16 +336,22 @@ $(function(){
 			if(parseNewLines(matched[word.word]) === parseNewLines(word.explanation)){
 				word.learnt = ~~word.learnt + 1;
 				word.hits = word.hits + 1 || 1;
+				curr.hitThisRound = true;
 				succeedTermsAnim($s.terms.eq(i));
 				succeedDefsAnim($s.defs.eq(i));
 			}else{
-				word.learnt -= 1;
+				if(curr.learnt > 0){
+					curr.learnt -= 1;
+				}
+				curr.hitThisRound = false;
 				word.hits = word.hits || 0;
 				failTermsAnim($s.terms.eq(i));
 				failDefsAnim($s.defs.eq(i));
 			}
 		}
-
+		
+		done = true;
+		
 		overwriteSubmit(next);
 	}
 	
@@ -354,6 +361,15 @@ $(function(){
 		
 		curr = getNextPack();
 		
+		if(!done){
+			for(i = 0; i < subRoundsLimit; ++i){
+				curr[i].hitThisRound = false;
+				curr[i].hits = curr[i].hits || 0;
+				if(curr[i].learnt > 0){
+					curr[i].learnt -= 1;
+				}
+			}
+		}
 		if(curr){
 			for(i = 0; i < subRoundsLimit; ++i){
 				expls[i] = curr[i].explanation;
@@ -364,8 +380,10 @@ $(function(){
 			unmatchAll();
 			overwriteSubmit(check);
 		}else{
-			alert("finish");
+			doStatistics();
+			$s.quiz.hide("fold", matchSpeed);
 		}
+		done = false;
 	}
 	
 	function assignWords(words, expls){
@@ -387,6 +405,9 @@ $(function(){
 	}
 	
 	function parseNewLines(str){
+		if(typeof str === "undefined"){
+			return str;
+		}
 		return str.replace(/<br>|\r\n|\r|\n/g, "<br />");
 	}
 	/**
@@ -489,8 +510,126 @@ $(function(){
 			func();
 		}
 	}
+	
+	
+	function doStatistics(){
+		var learntArr = []
+			,	i
+			,	len;
+		
+		for(i = 0, len = wordBank.length; i < len; ++i){
+			learntArr.push({
+				word: wordBank[i].word
+			,	learnt: wordBank[i].learnt
+			});
+		}
+		
+		$.ajax({
+			type: "POST"
+		,	url: "/test/update"
+		,	data: { words: learntArr }
+		,	statusCode: {
+				401: tellToLogIn
+			}
+		}).fail(function(){
+			alert("Unable to post results to the server");
+		});
+		
+		displayStatistics();
+	}
+	
+	function displayStatistics(){
+		var i
+			,	len
+			,	$cell
+			,	$row
+			,	$word
+			,	$res = $s.results
+			,	$footer = $s.footer
+			,	classer = false
+			,	learntClass
+			,	func;
+		
+		$res.detach()
+			.empty();		
+		
+		for(i = 0, len = wordBank.length; i < len; ++i, classer = !classer){
+			$row = $("<tr>");
+			
+			if(classer){
+				$row.addClass("even");
+			}else{
+				$row.addClass("odd");
+			}
 
+			$cell = $("<td>").text(~~wordBank[i].hits);
+			$row.append($cell);
 
+			$cell = $("<td>").text(wordBank[i].learnt);
+			$row.append($cell);
+			if(~~wordBank[i].learnt >= 20){
+				$cell.addClass("learnt");
+			}else{
+				$cell.addClass("notLearnt");
+			}
+			
+			if(wordBank[i].hitThisRound){
+				learntClass = "learnt";
+			}else{
+				learntClass = "notLearnt";
+			}
+			
+			
+			
+			$word = $("<p>")
+				.addClass("hidden explText")
+				.html(parseNewLines(wordBank[i].explanation));
+			func = togExplWrapper($word);
+			
+			$cell = $("<a>")
+				.attr("href", "#")
+				.on("click", func)
+				.append($("<td>")
+					.addClass([learntClass, "statsWord"].join(" "))
+					.text(wordBank[i].word)
+					.append($word));
+			$row.prepend($cell);
+			
+			$row.appendTo($res);
+		}
+		
+		$footer.detach()
+			.empty()
+			.append($("<td>").text(len + " word" + (len === 1 ? "" : "s")))
+			.append($("<td>").text("/" + rounds * subRoundsLimit))
+			.append($("<td>").text(((wordBank.reduce(function(sum, elem){
+					return sum + ~~elem.learnt;
+				}, 0) / len) / 20 * 100).toPrecision(3) + "%"));
+		
+		$s.stats.append($res).append($footer);
+
+		showStats(len);
+	}
+	
+	function togExplWrapper($expl){
+		return function(e){
+			if(e.preventPropagation){
+				e.preventPropagation();
+			}
+			if(e.preventDefault){
+				e.preventDefault();
+			}
+			
+			toggleExplanation($expl);
+			
+			return false;
+		}
+	}
+
+	function toggleExplanation($expl){			
+		$expl.toggle(250);
+	}
+	
 	// animations
 	
 	function unmatchAll(){
@@ -516,6 +655,18 @@ $(function(){
 	
 	function failDefsAnim($def){
 		$def.addClass("notLearnt");
+	}
+	
+	function showStats(len, callback){
+		if($s.stats.css("display") === "none"){
+			$s.stats.show("blind", 1000 + len * 20, callback);
+		}
+	}
+	
+	function hideStats(callback){
+		if($s.stats.css("display") !== "none"){
+			$s.stats.hide("blind", 1000, callback);
+		}
 	}
 });
 

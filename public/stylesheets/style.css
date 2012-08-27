@@ -35,6 +35,11 @@ a:hover {
 	font: 5em Garamond, serif;
 	font-weight: bold;
 	margin: 0.2em;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: default;
 }
 
 .block {
@@ -181,7 +186,7 @@ p, h4, .info {
 	top: 35%;
 }
 
-#loginForm {
+fieldset {
 	background-color: #292912;
 }
 

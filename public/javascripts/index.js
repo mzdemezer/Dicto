@@ -1,4 +1,4 @@
-$(function(){
+﻿$(function(){
 	var fields = [
 				"word"
 			,	"type"
@@ -23,6 +23,7 @@ $(function(){
 			,	selType: $("#selType")
 			,	info: $("#info")
 			,	loginForm: $("#loginForm")
+			,	opa: $("#opa")
 			,	loginWrapper: $("#loginWrapper")
 			,	loginId: $("#loginId")
 			,	loginPass: $("#loginPass")
@@ -36,12 +37,52 @@ $(function(){
 			,	WRiframe: $("#WRiframe")
 			}
 		,	chaptersPattern = /([1-9]\d*|\d)\s*-\s*([1-9]\d*|\d)|([1-9]\d*|\d)/g;
+		
 	
 	(function init(){
 		var i
+			,	len
 			,	user = $s.userInfo.text()
-			,	opa = $(".opa");
-		for(i = 0; i < fields.length; ++i){
+			,	opa = $(".opa")
+			,	$active
+			,	$letters = $("<p>")
+			,	$ipa = $("<p>")
+			,	letters = [
+					"à"
+				,	"â"
+				,	"ä"
+				,	"ç"
+				,	"é"
+				,	"è"
+				,	"ê"
+				,	"ë"
+				,	"î"
+				,	"ï"
+				,	"ô"
+				,	"ù"
+				,	"û"
+				,	"ü"
+				]
+			, ipa = [
+					"ɑ"
+				,	"ɑ̃"
+				,	"ɛ"
+				,	"ɛ̃"
+				,	"ə"
+				,	"ɔ"
+				,	"ɔ̃"
+				,	"œ"
+				,	"œ̃"
+				,	"ø"
+				,	"ɥ"
+				,	"ɲ"
+				,	"ŋ"
+				,	"ʀ"
+				,	"ʃ"
+				,	"ʒ"
+				];
+
+		for(i = 0, len = fields.length; i < len; ++i){
 			$s[fields[i]] = $("#" + fields[i]);
 		}
 		
@@ -74,6 +115,45 @@ $(function(){
 			}).on("blur", function(){
 				opa.removeClass("opafocus");
 			});
+		
+		for(i = 0, len = letters.length; i < len; ++i){
+			$letters.append($("<a>")
+				.attr("href", "#")
+				.addClass("help")
+				.text(letters[i])
+				.on("click", letterHandler)
+			);
+		}
+		
+		for(i = 0, len = ipa.length; i < len; ++i){
+			$ipa.append($("<a>")
+				.attr("href", "#")
+				.addClass("help")
+				.text(ipa[i])
+				.on("click", letterHandler)
+			);
+		}
+		
+		$letters.add($ipa)
+			.appendTo($("#letters"));
+		
+		$("input[type=text], textarea")
+			.on("focus", function(){
+				$active = $(this);
+			});
+		
+		function letterHandler(e){
+			e.preventDefault();
+			
+			if(	$active
+			&&	$active.is("input[type=text], textarea")){
+				$active
+					.val($active.val() + $(this).text())
+					.focus();
+			}
+
+			return false;
+		}
 		
 		__render();
 		
@@ -223,7 +303,9 @@ $(function(){
 			,	i
 			,	len = data.length;
 		
-		if(len === 1){
+		if(data.length == null){
+			fillForm(data);
+		}else if(len === 1){
 			fillForm(data[0]);
 		}else if(len === 0){
 			emptyForm();
@@ -591,12 +673,12 @@ $(function(){
 	
 	function centralizeUserPanel(){
 		$s.userPanel.addClass("cl", 1000);
-		$s.loginForm.removeClass("opa");
+		$s.opa.removeClass("opa");
 	}
 	
 	function decentralizeUserPanel(){
 		$s.userPanel.removeClass("cl", 1000);
-		$s.loginForm.addClass("opa");
+		$s.opa.addClass("opa");
 	}
 	
 	function shuffleLoginButton(newValue){

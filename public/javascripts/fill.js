@@ -428,7 +428,7 @@
 		showStats(len);
 	}
 	
-	function togExplWrapper($expl){console.log($expl);
+	function togExplWrapper($expl){
 		return function(e){
 			if(e.preventPropagation){
 				e.preventPropagation();
@@ -444,7 +444,7 @@
 	}
 
 	function toggleExplanation($expl){			
-		$expl.toggle(500);
+		$expl.toggle(250);
 	}
 
 	function tellToLogIn(){

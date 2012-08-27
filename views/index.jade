@@ -3,8 +3,8 @@ extends search
 
 prepend content
 	#userPanel.clri.abso
-		form#loginForm.opa
-			fieldset
+		form#loginForm
+			fieldset#opa.opa
 				#registerWrapper.divStd
 					p.textStd You don't have an account?
 					h4.textStd Register now!
@@ -48,13 +48,14 @@ block modify
 				label(for="pronunciation") Pronunciation
 				input(type="text")#pronunciation.block
 				label(for="explanation") Explanation
-				textarea(rows="15", cols="30")#explanation.block
+				textarea(rows="9", cols="30")#explanation.block
 				label(for="chapter") Chapter
 				input(type="number", value="0")#chapter.block
 				.block
 					input(type="checkbox")#important
 					label(for="important") Important
 				p#learnt
+			fieldset#letters
 			fieldset
 				input(type="submit", value="Save")#save
 				input(type="button", value="Delete")#del

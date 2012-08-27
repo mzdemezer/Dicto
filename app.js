@@ -200,18 +200,28 @@ app.get(urlParams.register("/count"), urlParams("/count"), function(req, res, ne
 app.post("/edit", requireLogged(function(req, res, next){
 	res.send(401);
 }), function(req, res, next){
-	database.query(query.del(req.body.word), function(err, rows, fields){
+	database.query(query.word(req.body.word), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
-			req.body.learnt = 0;
-			database.query(query.insert(req.body), function(err, rows, fields){
-				if(err){
-					next(err, req, res);
-				}else{
-					res.send("Edited: " + req.body.word, 200);
-				}
-			});
+			if(rows.length){
+				database.query(query.modify(req.body), function(err, rows, fields){
+					if(err){
+						next(err, req, res);
+					}else{
+						res.send("Edited: " + req.body.word, 200);
+					}
+				});
+			}else{
+				req.body.learnt = 0;
+				database.query(query.insert(req.body), function(err, rows, fields){
+					if(err){
+						next(err, req, res);
+					}else{
+						res.send("Added: " + req.body.word, 201);
+					}
+				});
+			}
 		}
 	});
 });
@@ -290,12 +300,12 @@ function requireLogged(errHandler){
 	}
 
 	return function(req, res, next){
-		next();
-		// if(req.logged){
-			// next();
-		// }else{
-			// errHandler(req, res, next);
-		// }
+		// next();
+		if(req.logged){
+			next();
+		}else{
+			errHandler(req, res, next);
+		}
 	}
 }
 
@@ -321,7 +331,7 @@ function errorHandler(err, req, res, next){
 
 (function init(){
 	function startServer(){
-		console.log("The server is connected to MySQL database");
+		console.log("The server is connected to MySQL database");		
 		files = {
 			standard: jsonicate([
 					"/public/stylesheets/style.css"
