@@ -145,29 +145,16 @@ app.del("/deleteUser", requireLogged(function(req, res, next){
 });
 
 app.get("/search/:word", function(req, res, next){
-	var sqlResp;
-	
   database.query(query.word(req.word), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
 			if(rows.length === 0){
-				database.query(query.top(req.word, 30), function(err, rows, fields){
+				database.query(query.contain(req.word), function(err, rows, fields){
 					if(err){
 						next(err, req, res);
 					}else{
-						if(rows.length < 30){
-							sqlResp = rows;
-							database.query(query.expl(req.word, 30), function(err, rows, fields){
-								if(err){
-									next(err, req, res);
-								}else{
-									res.json(unique(sqlResp.concat(rows)).slice(0, 30));
-								}
-							});
-						}else{
-							res.json(rows);
-						}
+						res.json(rows);
 					}
 				});
 			}else{

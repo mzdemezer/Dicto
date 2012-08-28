@@ -1,0 +1,34 @@
+﻿SELECT * FROM words WHERE
+	word LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", word) LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", SUBSTR(word, 1, LENGTH(word) - 1) LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", SUBSTR(word, 1, LENGTH(word) - 2)) LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", SUBSTR(word, 1, LENGTH(word) - 3)) LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", SUBSTR(word, 1, LENGTH(word) - 4)) LIKE "%req.word.word%" OR
+	REPLACE(explanation, "~", SUBSTR(word, 1, LENGTH(word) - 5)) LIKE "%req.word.word%"
+	ORDER BY positionmin(POSITION("req.word.word" IN word), POSITION("req.word.word" IN explanation)), word
+	LIMIT (limit + "");
+	
+	
+	
+DELIMITER //
+CREATE FUNCTION positionmin(a INT, b INT)
+RETURNS INT
+BEGIN
+	IF a = 0 THEN RETURN IF(b = 0, 100000, b);
+	ELSEIF b = 0 THEN RETURN a;
+	ELSE RETURN IF(a < b, a, b);
+	END IF;
+END //
+DELIMITER ;
+
+
+
+SELECT word,explanation FROM words 
+	WHERE words.set_id = 
+		(SELECT set_id FROM sets
+			WHERE user_id = 
+				(SELECT user_id FROM users
+					WHERE name="user_name"
+				)
+		);

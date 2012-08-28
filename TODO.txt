@@ -17,6 +17,7 @@ Server side
 		or object { type: "string", arguments: something }
 			Error would terminate sequential execution with so-far resp and error object; and call callback function
 	- Zwinąć dzięki takiemu modułowi ładnie init, ze wszystkimi zapytaniami początkowymi
+	- Przy braku trafień poczekać na przekierowanie z WR i wykonać ponowne wyszukiwanie
 
 Client Side
 	! Uważać na zdarzenia domyślne (jak nieszczęsny backspace, gdy żaden element nie jest na celowniku, który to klawisz cofa stronę)
@@ -25,7 +26,7 @@ Client Side
 		- wyświetlanie wyników wyszukiwania co np. 500 słów
 
 	Test
-		!?listy słów - zapisywane selektorem - wystarczy łańcuch JSONa z adresu
+		!?listy słów - zapisywane tablicą selektorów - wystarczy łańcuch JSONa z adresu
 
 	Fill
 		- jeżeli w określeniu jest =, to przy sprawdzaniu powinien rozbijać na człony i sprawdzać każdy z osobna
