@@ -1,4 +1,4 @@
-
+﻿
 extends search
 
 prepend content
@@ -38,8 +38,8 @@ block engineRest
 	#def
 
 block modify
-	.floatLeft.divStd
-		form#editForm
+	.floatLeft
+		form#editForm.searchRes
 			fieldset
 				label(for="word") Word
 				input(type="text")#word.block
@@ -62,5 +62,5 @@ block modify
 				p#info.info
 
 block WR
-		.wrcont.floatLeft.divStd
-			iframe(width="100%", height="100%")#WRiframe
+	.wrcont.floatLeft.divStd.halfPage
+		iframe(width="100%", height="100%")#WRiframe

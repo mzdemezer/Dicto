@@ -1,41 +1,84 @@
 ﻿- Znaleźć źródło list słówek w necie
 - Sprawić, żeby node mi ściągał z word reference! :[
 - Zrobić wersję dla wielu użytkowników (każdy może mieć wiele baz i je współdzielić, dodać listę baz użytkownika do wyszukiwania; ustawienia użytkownika: ustawienia bazy słówek - język, urle słowników; język interfejsu)
+- Scrap z jakiejś stronki z bazą nagranych słówek
+
+- edycja słówka - wyszukiwanie i pokazanie wyniku, a obok edytuj i wtedy zapisuje się jakie to słówko; tak samo dodaj, odpowiedni przycisk i uruchamia się edycja; w jednym i drugim potrzebne potwierdzenie, czy już nie istnieje takie słówko i czy je nadpisać (pokazać wynik wyszukiwania); wszystko może być w jednym oknie
+- ustawienia użytkownika: wymagaj/nie wymagaj wszystkich terminów do danej definicji
+
+- URLparams - to znika, wszystko jest w req.query...
+- Update - zmienić na zapisywanie i odpisywanie od bieżącego stanu w bazie
+- Learn - limit dla danego użytkownika, domyślnie 20; tabela learn(id,word_id,user_id,count)
+- Asercja przeciw pustym słowom
+- ~,| - tylda w wyjaśnieniu, | odziela temat od końcówki, nie zapisuje się w haśle, a zapisuje pozycję w specjalnym polu i potem jeśli to pole nie jest null, to dzięki niemu odcina i nie musi szukać reszty
+- jeśli w danych słówkach nastąpił zbyt duży postęp na raz, to pokaż informację, że lepiej poćwiczyć później, ale jeszcze raz; wymaga to prowadzenia logu dla ostatnich zmian... to może być chyba nawet w pamięci jako cache z timeoutem
+- wyjaśnienia niezależnie od słówek, wtedy wiele słówek może mieć to samo znaczenie i vice versa... przemyśleć, może lepiej składować jsona?
+	EDIT: Słówka niezależnie od wyjaśnień, do słówka tylko id, język,
+	a wyjaśnienia należą do zbiorów...
+- cache w pamięci o preferencjach zalogowanych użytkowników i przy zmianach zmiana również w cache'u - w ten sposób zmniejszy się liczba zapytań do bazy
+- Na rodzajniki: zaciąga z jakiejś strony newsy po francusku i usuwa rodzajniki. Trzeba je wstawić w luki.
+- Kopiowanie baz słówek, na które można patrzeć - żeby można było je samemu modyfikować.
+
+- kategorie jako ścieżki /.../... etc., REGEXP po stronie SQLa
+- do danego słówka wiele wyjaśnień, które mogą mieć oboczność w pisowni, każde może mieć określoną część mowy, kategorię, wymowę... do czego learnt??
+
+! które elementy jako elementy relacyjne bazy, a które upchnąć do jednego JSONa?
+
+- cache - do czego tylko można, trzeba się zastanowić... do ostatnich wyborów selektorów do testów, do zmian? Do ustawień użytkownika
 
 Server side
-	-	Query module containing:
-		- Create query module
-		- Mysql binding
-		- pool
-		in shape of a Mulitiple Query function:
-			mysql([array of queries], function callback(err, resp = [
-				{ rows: [...], fields: [...] }
-			,	{ rows: [...], fields: [...] }
-			,	{ rows: [...], fields: [...] }
-			]){ ... }),
-		where a query is either complete query typeof string
-		or object { type: "string", arguments: something }
-			Error would terminate sequential execution with so-far resp and error object; and call callback function
-	- Zwinąć dzięki takiemu modułowi ładnie init, ze wszystkimi zapytaniami początkowymi
-	- Przy braku trafień poczekać na przekierowanie z WR i wykonać ponowne wyszukiwanie
+	- Zrefakturyzować w oparciu o Emilipedię
+	- Cluster: stats
+		- connections: total, active, przekrój przez wątki
+		- requests
+		- workers working
+		- workers lifetime
+		!? reply serwer do administracji na innym porcie - ustanawiany przed odpaleniem wątków pobocznych
+	!? Przy braku trafień poczekać na przekierowanie z WR i wykonać ponowne wyszukiwanie
+	- Uzupełnienie likeSearch: obcinać też hasło, albo jakoś inaczej... Może da się wykorzystać regExp po stronie SQLa?! Wtedy ciekawe jak to działa i ile da się z tego wycisnąć
+	- _ jest zastępowane \_ w pronunciation przy zapisywaniu
 
 Client Side
+	- zmienić interfejs na bardziej przejrzysty
+	- zmienić kolory, użyć stylusa (różne zestawy, ale ten sam schemat dla różnych części)
+	- różne ustawienia dla różnych widoków (to by się zapisywało)
+	- tak jak na filmwebie - ustawienia do rozdzielczości ekranu, chyba że da się zrobić tak, żeby styl dopasowywał się...
 	! Uważać na zdarzenia domyślne (jak nieszczęsny backspace, gdy żaden element nie jest na celowniku, który to klawisz cofa stronę)
-
+	
+	/
+		- niezalogowany przekierowuje do aktualności
+		- zalogowany do search
+			= requireLogged na całość:
+				- jeżeli jest query, to przekieruj do query
+				- w przeciwnym przypadku przekieruj na aktualności
+				- / - alias dla index - search
+	
 	Index
 		- wyświetlanie wyników wyszukiwania co np. 500 słów
-
+		- szukanie - zaawansowane opcje rozwijane
+		- wyszukane słowa rozdzielane początkowymi literami
+		- focus na wyszukiwaniu tylko, jeżeli przed wyszukiwaniem tam był
 	Test
 		!?listy słów - zapisywane tablicą selektorów - wystarczy łańcuch JSONa z adresu
-
+		- Przy testach - hasło, wyrażenia z nim, oba
+		
 	Fill
+		- pasek postępu
 		- jeżeli w określeniu jest =, to przy sprawdzaniu powinien rozbijać na człony i sprawdzać każdy z osobna
 		- zlikwidować licznik rund, niepotrzebny jest
 		- przy statystykach to co się wpisało i diff co było źle
 		- czas wpisywania (jakiś limit, powyżej którego włącza pauzę; zależny od liczby słów/długości explanation) (do ustawiania limit na wpisywanie)
+		- pokazywanie wymowy
 		!?pokazywanie części mowy
 		!?zaliczanie gdy zabraknie akcentu? strict/nonstrict? - błędy w akcentach/literówka, przestawione litery, pojedyncza/podwójna tam gdzie powinno być na odwrót, dodatkowy mały wyraz, jego brak - pamięta, ale pisownia źle - na żółto i nie zmienia learnt; potrzebny jest tu algorytm do porównywania tekstów; ciekawym dodatkiem byłby algorytm do rozpoznawania wymowy słowa i porównywania jej z orginałem - tu można by jakoś rozpoznać jaki to jest błąd, albo przynajmniej ulepszyć rozpoznawanie pomyłki
 			Ten alogrytm to byłby na największy wspólny niekoniecznie spójny podciąg i do tego z zaznaczeniem miejsc gdzie opuścił coś. Do dalszego przemyślenia
-		
+			
+			- bardziej srogie ocenianie im bardziej słówko jest nauczone - do serwera tylko informacja o tym jak dobrze słówko zostało wpisane, tam, po stronie MySQLa funkcja do obliczania ile trzeba zmienić, a zwrotnie wartości learnt
+			- pobłażliwość dla występowania rodzajników przy rzeczownikach - zarówno określonych jak i nieokreślonych, ale wtedy rodzaj musi się zgadzać, lecz nie jest to duża pomyłka
+		- transition na długość chechText
+
 	Match
 		- Get it to work already!
+	
+	Type
+		- Pokazuje  word i trzeba uzupełnić część mowy (szczególnie dla rzeczowników - rodzaj)

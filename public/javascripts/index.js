@@ -9,7 +9,8 @@
 			,	"learnt"
 			]
 		,	$s = {
-				content: $("#content")
+				active: null
+			,	content: $("#content")
 			,	textWord: $("#textWord")
 			,	def: $("#def")
 			,	searchForm: $("#searchForm")
@@ -44,7 +45,6 @@
 			,	len
 			,	user = $s.userInfo.text()
 			,	opa = $(".opa")
-			,	$active
 			,	$letters = $("<p>")
 			,	$ipa = $("<p>")
 			,	letters = [
@@ -137,18 +137,18 @@
 		$letters.add($ipa)
 			.appendTo($("#letters"));
 		
-		$("input[type=text], textarea")
+		$("input, button, select, a, textarea")
 			.on("focus", function(){
-				$active = $(this);
+				$s.active = $(this);
 			});
 		
 		function letterHandler(e){
 			e.preventDefault();
 			
-			if(	$active
-			&&	$active.is("input[type=text], textarea")){
-				$active
-					.val($active.val() + $(this).text())
+			if(	$s.active
+			&&	$s.active.is("input[type=text], textarea")){
+				$s.active
+					.val($s.active.val() + $(this).text())
 					.focus();
 			}
 
@@ -156,6 +156,7 @@
 		}
 		
 		__render();
+		$s.textWord.focus();
 		
 		$s.buttonRegister.on("click", activateRegister);
 		
@@ -294,8 +295,12 @@
 		getWR(word);
 	}
 	
-	function getWR(word){
-		$s.WRiframe.attr("src", "http://www.wordreference.com/fren/" + word);
+	function getWR(word){//"http://mini.wordreference.com/mini/index.aspx?dict=fren&u=1&w="
+		$s.WRiframe
+			.attr("src", "http://www.wordreference.com/fren/" + word)
+			[0].onload = (function(e){
+				$s.active.focus();
+			});
 	}
 	
 	function appendWords(data){

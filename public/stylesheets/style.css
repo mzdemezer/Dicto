@@ -1,9 +1,9 @@
-body {
-  padding: 5px;
-	margin: none;
-  font-size: 16px;
+﻿body {
 	background-color: #000;
 	color: #f60;
+	font-size: 16px;
+	padding: 5px;
+	margin: none;
 }
 
 #studyWrapper {
@@ -172,8 +172,7 @@ p, h4, .info {
 }
 
 .wrcont {
-	width: 40%;
-	height: 80%;
+	height: 78%;
 }
 
 .clri {
@@ -342,4 +341,8 @@ li.leftMatched {
 
 .statsWord:hover {
 	color: #f60;
+}
+
+.halfPage {
+	width: 43em;
 }

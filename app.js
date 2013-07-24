@@ -1,4 +1,4 @@
-var http = require("http")
+﻿var http = require("http")
 	,	express = require("express")
 	,	loggedStore = require("loggedStore")
 	,	store = loggedStore({ reapInterval: 3600000 })
@@ -9,7 +9,7 @@ var http = require("http")
 	,	query = require("queries")
 	,	jsonicate = require("fileJSONicator")
 	,	files
-	,	urlParams = require("urlParams")(app)
+	,	urlJSON = require("urlJSON")(app)
 	,	reqFileParams = require("reqFileParams");
 
 app.configure(function(){
@@ -64,10 +64,10 @@ app.get("/", function(req, res, next){
   res.render("index", opts);
 });
 
-app.get(urlParams.register("/standard"), urlParams("/standard"), function(req, res, next){
+app.get(urlJSON.register("/standard"), urlJSON("/standard"), function(req, res, next){
 	var otherFiles = []
 		,	i
-		,	url_files = req.body.urlParams.files;
+		,	url_files = req.body.urlJSON.files;
 	try{
 		url_files = JSON.parse(url_files);
 		for(i = 0; i < url_files.length; ++i){
@@ -164,8 +164,8 @@ app.get("/search/:word", function(req, res, next){
 	});
 });
 
-app.get(urlParams.register("/chapters"), urlParams("/chapters"), function(req, res, next){
-	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
+app.get(urlJSON.register("/chapters"), urlJSON("/chapters"), function(req, res, next){
+	database.query(query.chapter(req.body.urlJSON), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
@@ -174,8 +174,8 @@ app.get(urlParams.register("/chapters"), urlParams("/chapters"), function(req, r
 	});
 });
 
-app.get(urlParams.register("/count"), urlParams("/count"), function(req, res, next){
-	database.query(query.count(req.body.urlParams), function(err, rows, fields){
+app.get(urlJSON.register("/count"), urlJSON("/count"), function(req, res, next){
+	database.query(query.count(req.body.urlJSON), function(err, rows, fields){
 		if(err){
 			next(err, req, res);
 		}else{
@@ -250,10 +250,10 @@ app.get("/test", requireLogged(), function(req, res, next){
 	res.render("test", opts);
 });
  
-app.get(urlParams.register("/test/:test"), urlParams("/test/:test"), requireLogged(), function(req, res, next){
+app.get(urlJSON.register("/test/:test"), urlJSON("/test/:test"), requireLogged(), function(req, res, next){
 	var opts;
 
-	database.query(query.chapter(req.body.urlParams), function(err, rows, fields){
+	database.query(query.chapter(req.body.urlJSON), function(err, rows, fields){
 		opts = {
 			userId: 0//req.cookies["logged-user-id"].userId
 		, otherFiles: reqFileParams(req.testName)
@@ -321,8 +321,8 @@ function errorHandler(err, req, res, next){
 		console.log("The server is connected to MySQL database");		
 		files = {
 			standard: jsonicate([
-					"/public/stylesheets/style.css"
-				,	"/public/javascripts/jquery.js"
+					// "/public/stylesheets/style.css"
+					"/public/javascripts/jquery.js"
 				,	"/public/javascripts/jquery-ui.js"
 				], __dirname)
 		,	index: jsonicate([ "/public/javascripts/index.js" ],		__dirname)
@@ -407,7 +407,7 @@ function uniqueComp(a, b){
 					(isNaN(a) && isNaN(b));
 			case "object":
 				type = protoName(a);
-				if(type	=== protoName(b)){
+				if(type === protoName(b)){
 					switch(type){
 						case "[object Array]":
 							type = a.length;

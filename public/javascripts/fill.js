@@ -192,7 +192,10 @@
 		overwriteBegin(startQuiz);
 		overwriteSubmit($s.fillForm, startQuiz);
 		
+		$("body").css("background-color", "#e7ee9d");
 		__render();
+		
+		$s.beginButton.focus();
 	})();
 
 	
@@ -276,12 +279,27 @@
 	
 	function checkWord(word){
 		return RegExp("^\\s*" + word.word
-			.replace(/!/g, "\\s*!?\\s*")
-			.replace(/[.]/g, "\\s*[.]?\\s*")
-			.replace(/,/g, "\\s*,?\\s*")
-			.replace(/ /g, "\\s+")
-			.replace(/\s*-\s*/g, "\\s*-\\s*")
 			.replace(/(^\s*)|(\s*$)/g, "")
+			.replace(/\\/g, "\\\\")
+			.replace(/\s*\(\s*/g, "\\s*\\(\\s*")
+			.replace(/\s*\)\s*/g, "\\s*\\)\\s*")
+			.replace(/\s*\[\s*/g, "\\s*\\[\\s*")
+			.replace(/\s*\]\s*/g, "\\s*\\]\\s*")
+			.replace(/\s*\{\s*/g, "\\s*\\{\\s*")
+			.replace(/\s*\}\s*/g, "\\s*\\}\\s*")
+			.replace(/\s*[?]\s*/g, "\\s*[?]?\\s*")
+			.replace(/\s*!\s*/g, "\\s*!?\\s*")
+			.replace(/\s*[.]\s*/g, "\\s*[.]?\\s*")
+			.replace(/\s*,\s*/g, "\\s*,?\\s*")
+			.replace(/\s*-\s*/g, "\\s*-\\s*")
+			.replace(/\s*'\s*/g, "\\s*'\\s*")
+			.replace(/\s*"\s*/g, "\\s*\"\\s*")
+			.replace(/\s*:\s*/g, "\\s*\:\\s*")
+			.replace(/\s*;\s*/g, "\\s*\;\\s*")
+			.replace(/\s*=\s*/g, "\\s*=\\s*")
+			.replace(/\s*\|\s*/g, "\\s*\\|\\s*")
+			.replace(/\s*\/\s*/g, "\\s*\\/\\s*")
+			.replace(/\s+/g, "\\s+")
 			+ "\\s*$", "i").exec($s.checkText.val());
 	}
 	
@@ -506,7 +524,7 @@
 			case "nm": return "un " + typed;
 			case "nf": return "une " + typed;
 			case "npl": return "des " + typed;
-			case "nmf": return "un/une " + typed;
+			case "n": return "un/une " + typed;
 			default: return typed;
 		}
 	}
@@ -532,7 +550,7 @@
 		startNewRound(callback);
 	}
 	
-		function overwriteBegin(func){
+	function overwriteBegin(func){
 		$s.beginButton[0].onclick = function(){
 			func();
 		}
@@ -612,7 +630,11 @@
 	}
 	
 	function showQuiz(callback){
-		$s.quiz.show("blind", 175, callback);
+		$s.quiz.show("blind", 175, function(){
+				$s.checkText.focus();
+				callback = callback || function(){};
+				callback();
+		});
 	}
 	
 	function hideQuiz(callback){

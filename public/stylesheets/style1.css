@@ -1,0 +1,348 @@
+﻿body {
+	background-color: #fbd58d;
+	color: #ed303c;
+	font-size: 16px;
+	padding: 5px;
+	margin: none;
+}
+
+#studyWrapper {
+	padding: 1em;
+}
+
+a {
+	text-decoration: none;
+	transition: all .1s ease-in-out;
+	-moz-transition: all .1s ease-in-out;
+	-webkit-transition: all .1s ease-in-out;
+	-o-transition: all .1s ease-in-out;
+}
+
+a:hover {
+	color: #3b8183;
+}
+
+.stdAnc {
+	color: #ed303c;
+	padding: 0.2em;
+	margin: 1em;
+	background-color: #fbd58d;
+}
+
+.title {
+	color: #f5634a;
+	text-align: center;
+	font: 5em Garamond, serif;
+	font-weight: bold;
+	margin: 0.2em;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+.block {
+	display: block;
+}
+
+select {
+	border: 1px solid #aaa;
+}
+
+fieldset, input, textarea, .divStd, a, p, select {
+	font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+input, select, textarea {
+	background-color: #fbd58d;
+	color: #f5634a;
+}
+
+fieldset, input, textarea, .divStd, select, .stdAnc, table.stats, th.stats, td.stats {
+	border-radius: 5px;
+	border-top: 1px solid #fbd58d;
+	border-left: 1px solid #fbd58d;
+	border-right: 1px solid #235757;
+	border-bottom: 1px solid #235757;
+}
+
+input, select, textarea, a {
+	transition: all .1s ease-in-out;
+	-moz-transition: all .1s ease-in-out;
+	-webkit-transition: all .1s ease-in-out;
+	-o-transition: all .1s ease-in-out;
+}
+
+input:hover, select:hover, textarea:hover, .stdAnc:hover, thead {
+	color: #fbd58d;
+	background-color: #235757;
+}
+
+.even {
+	background-color: #fbd58d;
+	color: #ed303c;
+}
+
+.odd {
+	background-color: #f6ebd9;
+	color: #f5634a;
+}
+
+.searchRes {
+	width: 25em;
+}
+
+em {
+	font-weight: bold;
+}
+
+h2 {
+	margin: 0.2em;
+}
+
+.notLearnt {
+	color: #f00;
+}
+
+.learnt {
+	color: #0f0;
+}
+
+.info {
+	font-size: 1.5em;
+	color: #ff9c5b;
+	font-weight: bold;
+}
+
+p, h4, .info {
+	text-align: center;
+}
+
+.centerOut {
+	width: 100%;
+	text-align: center;
+}
+
+.centerIn {
+	display: inline-block;
+}
+
+.center {
+	margin-left: auto;
+	margin-right: auto;
+
+	display: -moz-box;
+	-moz-box-orient: horizontal;
+	-moz-box-pack: center;
+
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-pack: center;
+
+	display: box;
+	box-orient: horizontal;
+	box-pack: center;
+}
+
+.textStd {
+	margin: 0.5em;
+}
+
+.floatLeft {
+	display: inline;
+	float: left;
+}
+
+.floatRight {
+	float: right;
+	display: inline;
+}
+
+.divStd {
+	background-color: #f6ebd9;
+	margin: 0.5em;
+	padding: 0.4em;
+}
+
+.abso {
+	position: absolute;
+	z-index: 10000;
+	border-radius: 6px;
+}
+
+.wrcont {
+	height: 78%;
+}
+
+.clri {
+	right: 2%;
+	top: 2%;
+}
+
+.cl {
+	right: 42%;
+	top: 35%;
+}
+
+fieldset {
+	background-color: #f6ebd9;
+}
+
+.opa {
+	opacity: 0.2;
+	transition: all 0.3s ease-in-out 0.05s;
+	-moz-transition: all 0.3s ease-in-out 0.05s;
+	-webkit-transition: all 0.3s ease-in-out 0.05s;
+	-o-transition: all 0.3s ease-in-out 0.05s;
+}
+
+.opa:hover, .opafocus {
+	opacity: 1.0;
+}
+
+.foundWord {
+	color: #ff9c5b;
+}
+
+.foundWord:hover {
+	color: #3b8183;
+}
+
+input.quiz {
+	transition: color 1s ease-in-out;
+	-moz-transition: color 1s ease-in-out;
+	-webkit-transition: color 1s ease-in-out;
+	-o-transition: color 1s ease-in-out;
+}
+
+input.succ {
+	border: none;
+	color: #0f0;
+}
+
+input.fail {
+	border: none;
+	color: #f00;
+}
+
+.bigText, table, th {
+	font-size: 1.5em;
+}
+
+table, td, th {
+	padding-left: 0.3em;
+	padding-right: 0.3em;
+	padding-top: 0.1em;
+	padding-bottom: 0.1em;
+	margin: 0.1em;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+h1 {
+	font-size: 2.5em;
+}
+
+.content {
+	width: 70em;
+	margin: 0 auto;
+}
+
+section {
+	display: block;
+}
+
+ul.quiz {
+	display: inline;
+	float: left;
+	margin: 1em;
+	padding: 1em;
+}
+
+[draggable] {
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: move;
+}
+
+a.help {
+	color: #ed303c;
+	margin: 0.3em;
+}
+
+a.help:hover {
+	color: #ff9c5b;
+}
+
+.drag {
+	margin-top: 0.6em;
+	margin-bottom: 0.6em;
+	margin-left: 0px;
+	margin-right: 0px;
+	height: 3em;
+	padding: 1em;
+	border: 3px #235757 solid;
+	background-color: #fbd58d;
+	list-style-type: none;
+	
+	display:-moz-box;
+	-moz-box-orient:horizontal;
+	-moz-box-pack:center;
+	-moz-box-align:center;
+	display:-webkit-box;
+	-webkit-box-orient:horizontal;
+	-webkit-box-pack:center;
+	-webkit-box-align:center;
+	display:box;
+	box-orient:horizontal;
+	box-pack:center;
+	box-align:center;
+	
+	border-bottom-left-radius: 1em;
+	border-top-left-radius: 1em;
+	border-bottom-right-radius: 1em;
+	border-top-right-radius: 1em;
+	transition: color .1s ease-in-out;
+	-moz-transition: color .1s ease-in-out;
+	-webkit-transition: color .1s ease-in-out;
+	-o-transition: color .1s ease-in-out;
+	transition: background-color .1s ease-in-out;
+	-moz-transition: background-color .1s ease-in-out;
+	-webkit-transition: background-color .1s ease-in-out;
+	-o-transition: background-color .1s ease-in-out;
+}
+
+li.rightMatched {
+	border-bottom-left-radius: 0px;
+	border-top-left-radius: 0em;
+	margin-left: -2em;
+	margin-right: 2em;
+}
+
+li.leftMatched {
+	border-bottom-right-radius: 0em;
+	border-top-right-radius: 0em;
+	margin-left: 2em;
+	margin-right: -2em;
+}
+
+.hidden {
+	display: none;
+}
+
+.explText {
+	color: #ff9c5b;
+}
+
+.statsWord:hover {
+	color: #ed303c;
+}
+
+.halfPage {
+	width: 43em;
+}
