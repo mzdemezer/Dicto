@@ -46,7 +46,6 @@ $(function(){
 		
 		getCount();
 		
-		__render();
 	})();
 	
 	function getCount(){

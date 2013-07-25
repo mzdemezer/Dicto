@@ -39,7 +39,6 @@
 				.text("No words here, Einstein!")
 				.addClass("bigText center")
 			);
-		__render();
 
 		return;
 	}
@@ -193,7 +192,6 @@
 		overwriteSubmit($s.fillForm, startQuiz);
 		
 		$("body").css("background-color", "#e7ee9d");
-		__render();
 		
 		$s.beginButton.focus();
 	})();

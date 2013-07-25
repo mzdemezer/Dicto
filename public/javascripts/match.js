@@ -99,7 +99,6 @@ $(function(){
 				.text("You need more words to play this game.")
 				.addClass("bigText center")
 			);
-		__render();
 
 		return;
 	}
@@ -285,7 +284,6 @@ $(function(){
 		overwriteBegin(startQuiz);
 		overwriteSubmit(startQuiz);
 		
-		__render();
 	})();
 
 	function opposite($elem){

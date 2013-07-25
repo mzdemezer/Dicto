@@ -2,101 +2,10 @@ doctype 5
 html
 	head
 		title Dicto
-		style(type="text/css", id="__$hide")
-			body {
-				display: none;
-			}
 		link(type="text/css", rel="stylesheet", href="/stylesheets/style3.css")
 		block scripts
-			script(type="text/javascript", id="__$init")
-				var thisScript = document.getElementById("__$init")
-					,	head = document.getElementsByTagName("head")[0]
-					,	otherFiles = !{otherFiles};		
-				
-				get("/standard" + otherFiles, function(data){
-					data = JSON.parse(data);
-					
-					appendArray(data);
-					
-					tidyUp();
-				}, tidyUp);
-				
-				function protoName(vArg){
-					return Object.prototype.toString.call(vArg);
-				}
-				
-				function get(path, success, failure){
-					var req = new XMLHttpRequest();
-					success = success || function(){};
-					failure = failure || function(){};
-
-					req.onreadystatechange = function(){
-						if(req.readyState === 4){
-							if(req.status === 200){
-								success(req.responseXML || req.responseText);
-							}else{
-								failure(req.responseXML || req.responseText);
-							}
-						}
-					};
-					req.open("GET", path);
-					req.send();
-				}
-				
-				function tidyUp(){
-					thisScript.parentNode.removeChild(thisScript);
-					delete thisScript;
-				}
-				
-				function appendElem(elem){
-					head.appendChild(elem);
-				}
-				
-				function appendFile(file){
-					var newFile;
-					if(typeof file === "object"){
-						switch(protoName(file)){
-							case "[object Object]":
-								switch(file.format){
-									case "css":
-										newFile = document.createElement("style");
-										newFile.setAttribute("type", "text/css");
-										newFile.textContent = file.file;
-										appendElem(newFile);
-										break;
-									case "js":
-										newFile = document.createElement("script");
-										newFile.setAttribute("type", "text/javascript");
-										newFile.textContent = file.file;
-										appendElem(newFile);
-										break;
-									default:
-										console.log(file.file);
-								}
-								break;
-							case "[object Array]":
-								appendArray(file);
-								break;
-						}
-					}
-				}
-				
-				function appendArray(arr){
-					var i;
-					for(i = 0; i < arr.length; ++i){
-						appendFile(arr[i]);
-					}
-				}
-			script(type="text/javascript", id="__$render")
-				function __render(){
-					var thisScript = document.getElementById("__$render")
-						,	hideStyle = document.getElementById("__$hide");
-
-					hideStyle.parentNode.removeChild(hideStyle);
-					delete hideStyle;
-					thisScript.parentNode.removeChild(thisScript);
-					delete thisScript;
-				}
+			script(src="/javascripts/jquery.js", type="text/javascript")
+			script(src="/javascripts/jquery-ui.js", type="text/javascript")
 	body
 		h1.title Dicto
 		block content

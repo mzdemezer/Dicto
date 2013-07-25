@@ -1,278 +1,213 @@
-﻿var http = require("http")
+﻿// var http = require("http")
+// 	,	express = require("express")
+// 	,	loggedStore = require("loggedStore")
+// 	,	store = loggedStore({ reapInterval: 3600000 })
+// 	,	mysql = require("mysql")
+// 	,	crypt = require("crypt")
+// 	,	database
+// 	,	app = express()
+// 	,	query = require("queries")
+// 	,	jsonicate = require("fileJSONicator")
+// 	,	files
+// 	,	urlJSON = require("urlJSON")(app)
+// 	,	reqFileParams = require("reqFileParams");
+	
+var cluster = require("cluster")
 	,	express = require("express")
-	,	loggedStore = require("loggedStore")
-	,	store = loggedStore({ reapInterval: 3600000 })
-	,	mysql = require("mysql")
-	,	crypt = require("crypt")
-	,	database
-	,	app = express()
-	,	query = require("queries")
-	,	jsonicate = require("fileJSONicator")
-	,	files
-	,	urlJSON = require("urlJSON")(app)
-	,	reqFileParams = require("reqFileParams");
-
-app.configure(function(){
-  app.set("port", process.env.PORT || 80);
-  app.set("views", __dirname + "/views");
-  app.set("view engine", "jade");
-	app.set("view options", { layout: false });
-  app.use(express.logger("dev"));
-	app.use(express.favicon(/*__dirname + path*/));
-  app.use(express.bodyParser());
-	app.use(express.cookieParser());
-	app.use(store.authenticate);
-  app.use(express.methodOverride());
-  app.use(app.router);
-	app.use(errorHandler);
-  app.use(express.static(__dirname + "/public"));
-});
-
-app.configure("development", function(){
-  app.use(express.errorHandler());
-});
-
-app.param("word", function(req, res, next, word){
-	req.word = word.toLowerCase();
-	next();
-});
-
-app.param("test", (function(){
-	var	tests = [
-				"fill"
-			,	"match"
-			];
-
-	return function(req, res, next, testName){
-		if(isIn(testName, tests)){
-			req.testName = testName;	
-			next();
-		}else{
-			throw new Error("No such test as " + testName + " is implemented.");
+	,	app
+	,	modules = {
+			path: require("path")
+		,	crypt: require("crypt")
+		,	async: require("async")
+		,	jsdom: require("jsdom")
+		,	sessionStore: require("sessionStore")
+		,	errorCodes: require("./errorCodes.js")
+		,	validate: require("validate")
+		,	database: require("queriesManager")
+		,	utils: require("utils")
+		,	nodeUtil: require("util")
+		,	queryUtil: require("queryUtil")
 		}
+	,	stdinUtils = require("stdinUtils")
+	,	config = require("./appConfig")
+	,	errorHandlers = {};
+
+modules.async.waterfall([
+	threadInit
+,	setConfiguration
+,	getPassword
+,	configureDatabase
+,	initDatabase
+,	configurePreAppModules
+,	configureApp
+,	configurePostAppModules
+,	configureRoutes
+], startApp);
+
+function threadInit(next){
+	if(~~process.env.threadNum){
+		config.database.initQueries = false;
 	}
-})());
+	next(null);
+}
 
-app.get("/", function(req, res, next){
-	var opts = {
-		userId: ""
-	, otherFiles: reqFileParams("index")
-	};
-	if(req.logged){
-		opts.userId = req.cookies["logged-user-id"].userId;
-	}
-  res.render("index", opts);
-});
+function setConfiguration(next){
+	config.app.port = process.env.PORT || config.app.port;
+	config.init.log = modules.validate.sParse(process.env.logInit, config.init.log);
+	config.database.queriesModule = require("queries");
+	config.database.poolSize = ~~process.env.poolSize || config.database.poolSize;
+	config.database.log = modules.validate.sParse(process.env.logDatabase, config.database.log);
+	config.database.cluster = modules.validate.sParse(process.env.cluster, config.database.cluster);
+	config.database.numCPUs = ~~process.env.numCPUs;
+	config.database.minSize = ~~process.env.minPoolSize || config.database.minSize;
+	config.sessionStore.reapInterval = modules.validate.sParse(process.env.reapInterval, config.sessionStore.reapInterval);
 
-app.get(urlJSON.register("/standard"), urlJSON("/standard"), function(req, res, next){
-	var otherFiles = []
-		,	i
-		,	url_files = req.body.urlJSON.files;
-	try{
-		url_files = JSON.parse(url_files);
-		for(i = 0; i < url_files.length; ++i){
-			if(files[url_files[i]]){
-				otherFiles.push(files[url_files[i]]);
-			}
-		}
-	}catch(err){
-		otherFiles = [];
-	}
-	res.json(files.standard.concat(otherFiles));
-});
+	errorHandlers[modules.errorCodes.unauthorized] = redirectUnauthorized;
+	errorHandlers[modules.errorCodes.dbDuplicate] = notifyDuplicates;
+	errorHandlers[modules.errorCodes.emptyForm] = emptyFormHandler;
+	next(null);
+}
 
-app.post("/login", function loginValidate(req, res, next){
-	database.query(query.getUser(req.body.userId), function(err, rows, fields){
-		if(err){
-			res.send(500);
-		}else{
-			if(rows.length === 0){
-				crypt.encrypt(crypt.random());
-				res.send(401);
-			}else{
-				if(crypt.isPassword(req.body.password, rows[0].passHash, rows[0].salt)){
-					store.newSession(req.body.userId, crypt.random(), res);
-					res.send(200);
-				}else{
-					res.send(401);
-				}
-			}
-		}
-	});
-});
-
-app.post("/logout", function(req, res, next){
-	if(req.logged){
-		store.endSession(req, res);
-		res.send(200);
+function getPassword(next){
+	var idx
+		,	password;
+	if(cluster.isWorker && process.env.__PASSWORD){
+		next(null, process.env.__PASSWORD);
 	}else{
+		idx = process.argv.indexOf("-p");
+		if(idx !== -1){
+			idx += 1;
+			password = process.argv[idx];
+			if(password){
+				return next(null, password);
+			}
+		}
+		console.log("Password to MySQL database:");
+		stdinUtils.getPassword(function(password){
+			next(null, password);
+		});
+	}
+}
+
+function configureDatabase(password, next){
+	config.database.password = password;
+	modules.database = modules.database(config.database);
+	next(null);
+}
+
+function initDatabase(next){
+	modules.database(function(err, qrMan){
+		if(err){
+			if(RegExp(modules.errorCodes.dbAccessDenied).exec(err)){
+				console.log("Wrong password to MySQL database.");
+				process.exit(3);
+			}else{
+				console.log(err);
+				process.exit(4);
+			}
+		}
+		modules.database = qrMan;
+		next(null);
+	});
+}
+
+function configurePreAppModules(next){
+	modules.sessionStore = modules.sessionStore(config.sessionStore);
+	modules.crypt = modules.crypt(config.crypt);
+	modules.utils = modules.utils(config.app);
+	next(null);
+}
+
+function configureApp(next){
+	var publicPath = modules.path.join(__dirname, "public");
+	
+	app = express();
+	app.configure(function(){
+		app.set("port", config.app.port);
+		app.set("views", modules.path.join(__dirname, "views"));
+		app.set("view engine", "jade");
+// 		app.set("view options", { layout: false });
+		app.use(express.favicon());
+		// app.use(function(req, res, next){
+		// 	console.log("ip: " + req.ip);
+		// 	next();
+		// });
+		app.use(express.logger("dev"));
+		app.use(express.bodyParser({ keepExtensions: true, uploadDir: modules.path.join(__dirname, "uploads") }));
+		app.use(express.cookieParser());
+		app.use(express.methodOverride());
+		app.use(modules.utils.useHostRedirect)
+		app.use(app.router);
+		app.use(require("stylus").middleware(publicPath));
+		app.use(express.static(publicPath));
+		app.use(errorHandler);
+		app.use(renderError);
+	});
+	
+	next(null);
+}
+
+function configurePostAppModules(next){
+	next(null);
+}
+
+function configureRoutes(next){
+	require("./routes/routes.js")(app, modules);
+	next(null);
+}
+
+
+function startApp(){
+	var port = app.get("port");
+	app.listen(port, function(){
+		console.log("Express server listening on port " + port);
+	});
+}
+
+
+function errorHandler(err, req, res, next){
+	var handler = errorHandlers[err];
+	if(handler){
+		handler(err, req, res, next);
+	}else{
+		console.log("error> " + err);
+		req.error = err;
+		req.statusCode = 500;
 		next();
 	}
-});
+}
 
-app.post("/newUser", function(req, res, next){
-	database.query(query.getUser(req.body.userId), function(err, rows, fields){
-		if(rows.length === 0){
-			var encryption = crypt.encrypt(req.body.password);
-			
-			database.query(query.insertUser(req.body.userId, encryption.hash, encryption.salt), function(err, rows, fields){
-				if(err){
-					console.log(err);
-					res.send(err, 500);
-				}else{
-					store.newSession(req.body.userId, crypt.random(), res);
-					res.send(201);
-				}
-			});
-		}else{
-			res.send(409);
-		}
-	});
-});
-
-app.del("/deleteUser", requireLogged(function(req, res, next){
-	res.send(401);
-}), function(req, res, next){
-	var userId;
-	userId = store.endSession(req, res);
-	database.query(query.delUser(userId), function(err, rows, fields){
-		if(err){
-			res.send(500)
-		}else{
-			res.send(204);
-		}
-	});
-});
-
-app.get("/search/:word", function(req, res, next){
-  database.query(query.word(req.word), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			if(rows.length === 0){
-				database.query(query.contain(req.word), function(err, rows, fields){
-					if(err){
-						next(err, req, res);
-					}else{
-						res.json(rows);
-					}
-				});
-			}else{
-				res.json(rows[0]);
-			}
-		}
-	});
-});
-
-app.get(urlJSON.register("/chapters"), urlJSON("/chapters"), function(req, res, next){
-	database.query(query.chapter(req.body.urlJSON), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.json(rows);
-		}
-	});
-});
-
-app.get(urlJSON.register("/count"), urlJSON("/count"), function(req, res, next){
-	database.query(query.count(req.body.urlJSON), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.json(rows);
-		}
-	});
-});
-
-app.post("/edit", requireLogged(function(req, res, next){
-	res.send(401);
-}), function(req, res, next){
-	database.query(query.word(req.body.word), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			if(rows.length){
-				database.query(query.modify(req.body), function(err, rows, fields){
-					if(err){
-						next(err, req, res);
-					}else{
-						res.send("Edited: " + req.body.word, 200);
-					}
-				});
-			}else{
-				req.body.learnt = 0;
-				database.query(query.insert(req.body), function(err, rows, fields){
-					if(err){
-						next(err, req, res);
-					}else{
-						res.send("Added: " + req.body.word, 201);
-					}
-				});
-			}
-		}
-	});
-});
-
-app.del("/edit/:word", requireLogged(function(req, res, next){
-	res.send(401);
-}), function(req, res, next){
-	database.query(query.del(req.word), function(err, rows, fields){
-		if(err){
-			next(err, req, res);
-		}else{
-			res.send("Deleted: " + req.word, 200);
-		}
-	});
-});
-
-app.get("/learn", requireLogged(), function(req, res, next){
-	var opts;
-
-	opts = {
-		userId: ""
-	, otherFiles: reqFileParams("learn")
-	};
-	if(req.logged){
-		opts.userId = req.cookies["logged-user-id"].userId;
+function renderError(req, res, next){
+	if(!req.error){
+		req.error = "It's certainly not here, pal";
+		req.statusCode = 404;
 	}
-	res.render("learn", opts);
-
-});
-
-app.get("/test", requireLogged(), function(req, res, next){
-	var opts;
-
-	opts = {
-		userId: 0//req.cookies["logged-user-id"].userId
-	, otherFiles: reqFileParams("test")
-	};
-
-	res.render("test", opts);
-});
- 
-app.get(urlJSON.register("/test/:test"), urlJSON("/test/:test"), requireLogged(), function(req, res, next){
-	var opts;
-
-	database.query(query.chapter(req.body.urlJSON), function(err, rows, fields){
-		opts = {
-			userId: 0//req.cookies["logged-user-id"].userId
-		, otherFiles: reqFileParams(req.testName)
-		,	words: JSON.stringify(rows)
-		};
-
-		res.render(req.testName, opts);
+	res.status(req.statusCode).render("error", {
+		user: req.logged
+	,	error: req.error
 	});
-});
+}
 
-app.post("/test/update", requireLogged(), function(req, res, next){
-	database.query(query.learn(req.body.words), function(err, rows, fields){
-		if(err){console.log("err: " + err);
-			next()
-		}else{
-			res.send(204);
-		}
-	});
-});
+function redirectUnauthorized(err, req, res, next){
+	res.hostRedirect("/login?redirect=" + req.url);
+}
+
+function emptyFormHandler(err, req, res, next){
+	res.redirect("back");
+}
+
+function notifyDuplicates(err, req, res, next){
+	res.json(409, { body: req.duplicates });
+}
+
+
+
+
+
+
+
+
+
 
 function getTableName(err){
 	return err.toString()
@@ -388,7 +323,7 @@ function errorHandler(err, req, res, next){
 			startApp(data);
 		});
 	}
-})();
+});
 
 
 function protoName(vArg){

@@ -90,7 +90,7 @@
 			.children()
 			.slice(1)
 			.clone()
-			.appendTo($s.type);		
+			.appendTo($s.type);
 		
 		overwriteSubmit($s.searchForm, submitSearch);
 		overwriteSubmit($s.editForm, submitEdit);
@@ -109,10 +109,10 @@
 			$s.studyWrapper.hide();
 		}
 		
-		$(".opa input, .opa a")
-			.on("focus", function(){
+		$(".opa") 
+			.on("focus", "input, a", function(){
 				opa.addClass("opafocus");
-			}).on("blur", function(){
+			}).on("blur", "input, a", function(){
 				opa.removeClass("opafocus");
 			});
 		
@@ -155,7 +155,6 @@
 			return false;
 		}
 		
-		__render();
 		$s.textWord.focus();
 		
 		$s.buttonRegister.on("click", activateRegister);
@@ -307,7 +306,7 @@
 		var $list = $("<ul>")
 			,	i
 			,	len = data.length;
-		
+		console.log(data);	
 		if(data.length == null){
 			fillForm(data);
 		}else if(len === 1){
