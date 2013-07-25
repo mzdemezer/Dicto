@@ -1,7 +1,6 @@
 module.exports = {
 	"app": {
-		"port": 3001 // 11111
-//	,	"domainName": "fanzinpedia.dosowisko.net"
+		"port": 3001
 	}
 ,	"init": {
 		"log": false
@@ -9,8 +8,8 @@ module.exports = {
 ,	"database": {
 		"log": false
 	,	"cluster": false
-	,	"user": "root" // "jedi1156"
-	,	"database": "Dicto" // "jedi1156_Emilipedia"
+	,	"user": "root"
+	,	"database": "Dicto"
 	,	"poolSize": 32
 	,	"minSize": 10
 	}
