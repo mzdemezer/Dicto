@@ -152,21 +152,18 @@ function configureWorkers(password, next){
 
 		console.log(worker.process.pid + " died, threadNum: " + worker.__threadNum);
 		if(worker.suicide === false){
-			if(code === 3){
-				console.log("Invalid password to database, give me something better");
-				modules.commander.getPassword(function(password){
-					config.forkEnv.__PASSWORD = password;
-					newWorker = cluster.fork(config.forkEnv);
-					newWorker._events = worker._events;
-					newWorker.__threadNum = env.threadNum;
-				});
-			}else{
+			if(restartWorker.isOnline(worker.id)){
+				restartWorker.offline(worker.id);
 				newWorker = cluster.fork(env);
 				newWorker._events = worker._events;
 				newWorker.__threadNum = env.threadNum;
+			} else {
+				console.log(worker.process.pid + " ended its misery due to some init bug. It won't be automatically restarted because of potential fatal code error.");
+				restartWorker.stop();
 			}
 		}else if(restartWorker.last() === worker.id){
 			cluster.fork(env).on("listening", function(newWorker, address){
+				restartWorker.online(worker.id);
 				restartWorker(worker.id);
 			}).__threadNum = env.threadNum;
 		}
@@ -246,10 +243,11 @@ restartWorker = (function(){
 	var args = null
 		,	callback = null
 		,	destroyed = null
+		,	ids = {}
 		,	my = function(id){
 			if(id === destroyed && args !== null){
 				if(args.length){
-					destroyed = ~~args.shift();
+					destroyed = 0|args.shift();
 					cluster.workers[destroyed].destroy();
 				}else{
 					finish();
@@ -257,20 +255,56 @@ restartWorker = (function(){
 			}
 		};
 	
+	function isOnline(id) {
+		return ids[id] === true;
+	}
+	my.isOnline = isOnline;
+
+	function online(id) {
+		return ids[id] = true;
+	}
+	my.online = online;
+
+	function offline(id) {
+		if(ids.hasOwnProperty(id) && ids[id] === true) {
+			delete ids[id];
+			return true;
+		} else {
+			return false;
+		}
+	}
+	my.offline = offline;
+
+	function isSaturated() {
+		return Object.keys(ids).length === config.forkEnv.numCPUs;
+	}
+	my.isSaturated = isSaturated;
+
 	my.init = function(state){
 		args = state.args || args;
 		callback = state.callback || callback || function(){};
 		destroyed = state.destroyed || destroyed;
+		offline(destroyed);
 		return my;
-	}
+	};
 	
 	my.last = function(){
 		return destroyed;
-	}
+	};
 	
 	my.callback = function(){
 		return callback;
-	}
+	};
+
+	my.stop = function(){
+		var cb = callback;
+		args = null;
+		callback = null;
+		destroy = null;
+		if(cb && typeof cb === "function") {
+			cb(false);
+		}
+	};
 
 	function finish(){
 		var cb = callback
@@ -324,6 +358,7 @@ function start(args, pass){
 						worker.__threadNum = i;
 					}
 					worker.on("listening", function(){
+						restartWorker.online(worker.id);
 						worker.removeAllListeners("listening");
 						pass(true);
 					});

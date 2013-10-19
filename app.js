@@ -1,18 +1,4 @@
-﻿// var http = require("http")
-// 	,	express = require("express")
-// 	,	loggedStore = require("loggedStore")
-// 	,	store = loggedStore({ reapInterval: 3600000 })
-// 	,	mysql = require("mysql")
-// 	,	crypt = require("crypt")
-// 	,	database
-// 	,	app = express()
-// 	,	query = require("queries")
-// 	,	jsonicate = require("fileJSONicator")
-// 	,	files
-// 	,	urlJSON = require("urlJSON")(app)
-// 	,	reqFileParams = require("reqFileParams");
-	
-var cluster = require("cluster")
+﻿var cluster = require("cluster")
 	,	express = require("express")
 	,	app
 	,	modules = {
@@ -45,7 +31,7 @@ modules.async.waterfall([
 ], startApp);
 
 function threadInit(next){
-	if(~~process.env.threadNum){
+	if(0|process.env.threadNum){
 		config.database.initQueries = false;
 	}
 	next(null);
@@ -128,10 +114,6 @@ function configureApp(next){
 		app.set("view engine", "jade");
 // 		app.set("view options", { layout: false });
 		app.use(express.favicon());
-		// app.use(function(req, res, next){
-		// 	console.log("ip: " + req.ip);
-		// 	next();
-		// });
 		app.use(express.logger("dev"));
 		app.use(express.bodyParser({ keepExtensions: true, uploadDir: modules.path.join(__dirname, "uploads") }));
 		app.use(express.cookieParser());
